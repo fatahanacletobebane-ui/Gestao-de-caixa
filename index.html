@@ -7,7 +7,6 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -52,7 +51,6 @@
     <div id="accessScreen" class="fixed inset-0 bg-gradient-to-br from-violet-700 to-purple-900 z-[100] flex items-center justify-center p-6">
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl animate-fade">
             
-            <!-- Seleção de Modo -->
             <div id="modeSelect">
                 <div class="text-center mb-6">
                     <div class="w-16 h-16 bg-violet-100 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -72,7 +70,6 @@
                 </div>
             </div>
 
-            <!-- LOGIN COM EMAIL + SENHA (SEM FIREBASE AUTH) -->
             <div id="loginForm" class="hidden">
                 <button onclick="backToMode()" class="mb-4 text-gray-400 hover:text-gray-600">
                     <i class="fas fa-arrow-left mr-2"></i>Voltar
@@ -99,7 +96,6 @@
                 </p>
             </div>
 
-            <!-- Nova Conta -->
             <div id="newAccountForm" class="hidden">
                 <button onclick="backToMode()" class="mb-4 text-gray-400 hover:text-gray-600">
                     <i class="fas fa-arrow-left mr-2"></i>Voltar
@@ -338,6 +334,34 @@
         </div>
     </div>
 
+    <!-- MODAL DADOS DO CLIENTE (ANTES DO RECIBO) -->
+    <div id="clienteModal" class="fixed inset-0 bg-black/80 z-[190] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl p-6 max-w-sm w-full animate-fade">
+            <h3 class="font-bold text-lg text-gray-800 mb-2"><i class="fas fa-user mr-2 text-violet-600"></i>Dados do Cliente</h3>
+            <p class="text-sm text-gray-500 mb-4">Campos opcionais para o recibo</p>
+            
+            <div class="space-y-3">
+                <div>
+                    <label class="text-xs font-bold text-gray-500 uppercase ml-1">Nome do Cliente (opcional)</label>
+                    <input type="text" id="clienteNome" placeholder="Ex: João Silva" class="w-full p-3 bg-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-violet-500">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-gray-500 uppercase ml-1">NUIT do Cliente (opcional)</label>
+                    <input type="text" id="clienteNuit" placeholder="123456789" class="w-full p-3 bg-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-violet-500">
+                </div>
+            </div>
+            
+            <div class="flex gap-3 mt-6">
+                <button onclick="pularDadosCliente()" class="flex-1 py-3 text-gray-500 font-bold rounded-xl hover:bg-gray-100 transition">
+                    Pular
+                </button>
+                <button onclick="confirmarDadosCliente()" class="flex-1 py-3 btn-primary rounded-xl font-bold shadow-lg hover:shadow-xl transition">
+                    <i class="fas fa-arrow-right mr-2"></i>Continuar
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL RECIBO POS -->
     <div id="receiptModal" class="fixed inset-0 bg-black/80 z-[200] hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl p-4 max-w-md w-full max-h-[90vh] overflow-y-auto">
@@ -346,10 +370,7 @@
                 <button onclick="fecharRecibo()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-xl"></i></button>
             </div>
             
-            <!-- RECIBO FORMATO POS -->
-            <div id="receiptContent" class="receipt-paper mx-auto">
-                <!-- Conteúdo gerado via JavaScript -->
-            </div>
+            <div id="receiptContent" class="receipt-paper mx-auto"></div>
             
             <div class="no-print mt-4 grid grid-cols-2 gap-3">
                 <button onclick="fecharRecibo()" class="py-3 rounded-xl font-bold border-2 border-gray-300 text-gray-600 hover:bg-gray-50 transition">
@@ -397,12 +418,13 @@
         // VARIÁVEIS GLOBAIS
         // ==========================================
         let currentUser = null;
-        let currentUserId = null; // UID único do usuário
+        let currentUserId = null;
         let localProducts = [];
         let cart = [];
         let currentFilter = 'all';
         let reportPeriod = 'today';
         let lastSaleData = null;
+        let clienteDados = { nome: '', nuit: '' }; // Dados do cliente para recibo
 
         // ==========================================
         // NAVEGAÇÃO ENTRE TELAS
@@ -424,29 +446,13 @@
             document.getElementById('newAccountForm').classList.remove('hidden');
         }
 
+        function encodeEmail(email) {
+            return email.replace(/\./g, ',').replace(/@/g, '_at_');
+        }
+
         // ==========================================
-        // CRIAÇÃO DE CONTA - COM EMAIL ÚNICO
+        // CRIAÇÃO DE CONTA
         // ==========================================
-        /*
-        ESTRUTURA NO FIREBASE:
-        contas/
-          └── {userId}/
-              ├── Nome: "João Silva"
-              ├── E-mail: "joao@email.com" (único, usado para login)
-              ├── Senha: "hash_da_senha" (simples, não é Firebase Auth)
-              ├── Nome da empresa: "Loja do João"
-              ├── Nuit: "123456789"
-              ├── Contacto: "841234567"
-              ├── Endereço: "Maputo..."
-              ├── activação Pro: "OFF"
-              ├── Prazo: "2026-12-31"
-              ├── vendasContador: 0
-              ├── products/
-              └── sales/
-        
-        emailIndex/
-          └── {email} (email codificado): {userId}
-        */
         async function createAccount() {
             const nome = document.getElementById('newNome').value.trim();
             const email = document.getElementById('newEmail').value.trim().toLowerCase();
@@ -466,7 +472,6 @@
                 return;
             }
 
-            // Validar email
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(email)) {
                 showToast('Digite um e-mail válido', 'error');
@@ -474,23 +479,22 @@
             }
 
             try {
-                // Verificar se email já existe (usando índice)
-                const emailKey = email.replace(/\./g, ','); // Firebase não aceita pontos em keys
+                showToast('A criar conta...', 'info');
+
+                const emailKey = encodeEmail(email);
                 const emailSnap = await db.ref(`emailIndex/${emailKey}`).once('value');
                 
                 if (emailSnap.exists()) {
-                    showToast('Este e-mail já está cadastrado. Use outro ou faça login.', 'error');
+                    showToast('Este e-mail já está cadastrado', 'error');
                     return;
                 }
 
-                // Criar ID único para o usuário
                 const userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 
-                // Criar estrutura da conta
                 const accountData = {
                     "Nome": nome,
                     "E-mail": email,
-                    "Senha": senha, // Em produção, use hash!
+                    "Senha": senha,
                     "Nome da empresa": empresa,
                     "Nuit": nuit || "",
                     "Contacto": contacto || "",
@@ -498,23 +502,17 @@
                     "activação Pro": "OFF",
                     "Prazo": new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0],
                     "vendasContador": 0,
-                    "createdAt": firebase.database.ServerValue.TIMESTAMP,
-                    "lastAccess": firebase.database.ServerValue.TIMESTAMP
+                    "createdAt": { ".sv": "timestamp" },
+                    "lastAccess": { ".sv": "timestamp" }
                 };
 
-                // Salvar conta
                 await db.ref(`contas/${userId}`).set(accountData);
-                
-                // Criar índice de email
                 await db.ref(`emailIndex/${emailKey}`).set(userId);
-                
-                // Criar nós filhos
                 await db.ref(`contas/${userId}/products`).set({});
                 await db.ref(`contas/${userId}/sales`).set({});
 
                 showToast('Conta criada com sucesso!', 'success');
                 
-                // Limpar formulário
                 document.getElementById('newNome').value = '';
                 document.getElementById('newEmail').value = '';
                 document.getElementById('newSenha').value = '';
@@ -525,13 +523,13 @@
 
                 backToMode();
             } catch (err) {
+                console.error('Erro:', err);
                 showToast('Erro ao criar conta: ' + err.message, 'error');
-                console.error(err);
             }
         }
 
         // ==========================================
-        // LOGIN COM EMAIL + SENHA (VERIFICAÇÃO DUPLO)
+        // LOGIN
         // ==========================================
         async function loginWithEmail() {
             const email = document.getElementById('loginEmail').value.trim().toLowerCase();
@@ -543,8 +541,9 @@
             }
 
             try {
-                // Buscar userId pelo email (índice)
-                const emailKey = email.replace(/\./g, ',');
+                showToast('A verificar...', 'info');
+
+                const emailKey = encodeEmail(email);
                 const indexSnap = await db.ref(`emailIndex/${emailKey}`).once('value');
                 
                 if (!indexSnap.exists()) {
@@ -553,8 +552,6 @@
                 }
 
                 const userId = indexSnap.val();
-                
-                // Buscar dados da conta
                 const accountSnap = await db.ref(`contas/${userId}`).once('value');
                 const accountData = accountSnap.val();
 
@@ -563,42 +560,33 @@
                     return;
                 }
 
-                // Verificar senha
                 if (accountData.Senha !== senha) {
                     showToast('Senha incorreta', 'error');
                     document.getElementById('loginSenha').value = '';
                     return;
                 }
 
-                // Login bem-sucedido
                 currentUserId = userId;
                 currentUser = accountData;
 
-                // Atualizar último acesso
-                await db.ref(`contas/${userId}/lastAccess`).set(firebase.database.ServerValue.TIMESTAMP);
+                await db.ref(`contas/${userId}/lastAccess`).set({ ".sv": "timestamp" });
 
                 showToast(`Bem-vindo, ${accountData["Nome da empresa"]}!`, 'success');
                 
-                // Limpar campos
                 document.getElementById('loginEmail').value = '';
                 document.getElementById('loginSenha').value = '';
 
                 showMainApp();
                 syncData();
+
             } catch (err) {
+                console.error('Erro login:', err);
                 showToast('Erro ao entrar: ' + err.message, 'error');
-                console.error(err);
             }
         }
 
         function recuperarSenha() {
-            const email = document.getElementById('loginEmail').value.trim();
-            if (!email) {
-                showToast('Digite seu e-mail primeiro', 'error');
-                return;
-            }
-            // Em produção: enviar email de recuperação
-            showToast('Entre em contato com o administrador para recuperar senha', 'info');
+            showToast('Entre em contato com o administrador', 'info');
         }
 
         function showMainApp() {
@@ -610,6 +598,7 @@
             currentUser = null;
             currentUserId = null;
             cart = [];
+            clienteDados = { nome: '', nuit: '' };
             
             atualizarCarrinhoUI();
             
@@ -621,7 +610,7 @@
         }
 
         // ==========================================
-        // SINCRONIZAÇÃO DE DADOS
+        // SINCRONIZAÇÃO
         // ==========================================
         function syncData() {
             if (!currentUserId) return;
@@ -637,9 +626,9 @@
                 const trialLimit = 50;
 
                 if (p["activação Pro"] === "OFF" && p.vendasContador >= trialLimit) {
-                    showLock(`Limite de ${trialLimit} vendas atingido! Ative o PRO.`);
+                    showLock(`Limite de ${trialLimit} vendas atingido!`);
                 } else if (p["activação Pro"] !== "OFF" && agora > dataPrazo && p["Prazo"] !== 'lifetime') {
-                    showLock("Prazo de licença expirado! Renove agora.");
+                    showLock("Prazo de licença expirado!");
                 } else {
                     document.getElementById('lockScreen').classList.add('hidden');
                     if(p["activação Pro"] !== "OFF") {
@@ -653,7 +642,7 @@
             db.ref(`contas/${currentUserId}/products`).on('value', snap => {
                 localProducts = [];
                 snap.forEach(c => { 
-                    if (c.key !== 'products') { 
+                    if (c.key !== 'products' && c.val() && c.val().nome) { 
                         localProducts.push({ id: c.key, ...c.val() }); 
                     }
                 });
@@ -672,25 +661,21 @@
         }
 
         function updateReports(snap) {
-            let totalVendas = 0; 
-            let totalLucro = 0;
-            let transacoes = 0;
+            let totalVendas = 0, totalLucro = 0, transacoes = 0;
             const hoje = new Date().toISOString().split('T')[0];
-            
             const sales = [];
+            
             snap.forEach(s => {
                 const v = s.val();
                 if (v && v.total) {
                     sales.push({ id: s.key, ...v });
-                    
                     if(reportPeriod === 'today' && v.data === hoje) {
                         totalVendas += v.total;
                         totalLucro += v.lucro || 0;
                         transacoes++;
                     } else if (reportPeriod === 'week') {
                         const saleDate = new Date(v.data);
-                        const weekAgo = new Date(Date.now() - 7*24*60*60*1000);
-                        if(saleDate >= weekAgo) {
+                        if(saleDate >= new Date(Date.now() - 7*24*60*60*1000)) {
                             totalVendas += v.total;
                             totalLucro += v.lucro || 0;
                             transacoes++;
@@ -711,7 +696,7 @@
             document.getElementById('relTransacoes').innerText = transacoes;
 
             const recent = sales.sort((a,b) => (b.timestamp || 0) - (a.timestamp || 0)).slice(0, 10);
-            const recentHtml = recent.map(s => `
+            document.getElementById('recentSales').innerHTML = recent.map(s => `
                 <div class="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
                     <div>
                         <p class="font-bold text-sm">${s.data}</p>
@@ -722,8 +707,7 @@
                         <p class="text-xs text-green-600">+${(s.lucro || 0).toFixed(2)} MT</p>
                     </div>
                 </div>
-            `).join('');
-            document.getElementById('recentSales').innerHTML = recentHtml || '<p class="text-gray-400 text-center py-4">Sem vendas no período</p>';
+            `).join('') || '<p class="text-gray-400 text-center py-4">Sem vendas</p>';
         }
 
         function setReportPeriod(period) {
@@ -740,16 +724,13 @@
 
         async function ativarPro() {
             const code = document.getElementById('codAtivacao').value.trim();
-            if (!code) return showToast('Insira o código de ativação', 'error');
-
-            if (!code.startsWith('PRO-')) {
+            if (!code || !code.startsWith('PRO-')) {
                 showToast('Código inválido', 'error');
                 return;
             }
 
-            const duration = 365;
             const newDate = new Date();
-            newDate.setDate(newDate.getDate() + duration);
+            newDate.setDate(newDate.getDate() + 365);
             
             await db.ref(`contas/${currentUserId}/activação Pro`).set(code);
             await db.ref(`contas/${currentUserId}/Prazo`).set(newDate.toISOString().split('T')[0]);
@@ -770,17 +751,11 @@
 
             if(!nome || !preco) return showToast("Preencha nome e preço", "error");
 
-            const productData = {
-                nome: nome,
-                preco: preco,
-                custo: custo || preco * 0.7,
-                qtd: qtd,
-                divida: div,
+            db.ref(`contas/${currentUserId}/products`).push({
+                nome, preco, custo: custo || preco * 0.7, qtd, divida: div,
                 lucroUnitario: (preco - (custo || preco * 0.7)),
-                createdAt: firebase.database.ServerValue.TIMESTAMP
-            };
-
-            db.ref(`contas/${currentUserId}/products`).push(productData);
+                createdAt: { ".sv": "timestamp" }
+            });
             
             fecharModal();
             showToast('Produto adicionado!', 'success');
@@ -794,7 +769,6 @@
         function renderStock() {
             const list = document.getElementById('listaEstoque');
             let filtered = localProducts;
-            
             if (currentFilter === 'low') filtered = localProducts.filter(p => p.qtd <= 5);
             else if (currentFilter === 'debt') filtered = localProducts.filter(p => p.divida === 'Sim');
 
@@ -815,11 +789,7 @@
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
-            `).join('');
-            
-            if (filtered.length === 0) {
-                list.innerHTML = '<div class="text-center py-8 text-gray-400"><i class="fas fa-box-open text-4xl mb-2"></i><p>Nenhum produto encontrado</p></div>';
-            }
+            `).join('') || '<div class="text-center py-8 text-gray-400"><i class="fas fa-box-open text-4xl mb-2"></i><p>Nenhum produto</p></div>';
         }
 
         function filterStock(type) {
@@ -827,11 +797,9 @@
             const buttons = document.querySelectorAll('#sec-estoque .flex.gap-2 button');
             const types = ['all', 'low', 'debt'];
             buttons.forEach((btn, idx) => {
-                if (types[idx] === type) {
-                    btn.className = 'px-4 py-2 bg-violet-600 text-white rounded-full text-sm font-bold whitespace-nowrap shadow-md';
-                } else {
-                    btn.className = 'px-4 py-2 bg-white text-gray-600 rounded-full text-sm font-bold whitespace-nowrap shadow-sm hover:bg-gray-50';
-                }
+                btn.className = types[idx] === type 
+                    ? 'px-4 py-2 bg-violet-600 text-white rounded-full text-sm font-bold whitespace-nowrap shadow-md'
+                    : 'px-4 py-2 bg-white text-gray-600 rounded-full text-sm font-bold whitespace-nowrap shadow-sm hover:bg-gray-50';
             });
             renderStock();
         }
@@ -844,7 +812,7 @@
         }
 
         // ==========================================
-        // VENDAS (POS)
+        // VENDAS
         // ==========================================
         function renderPOS() {
             const busca = document.getElementById('busca').value.toLowerCase();
@@ -865,11 +833,7 @@
                             </div>
                         </div>
                     </div>
-                `).join('');
-                
-            if (grid.innerHTML === '') {
-                grid.innerHTML = '<div class="col-span-full text-center py-8 text-gray-400"><i class="fas fa-search text-3xl mb-2"></i><p>Nenhum produto encontrado</p></div>';
-            }
+                `).join('') || '<div class="col-span-full text-center py-8 text-gray-400"><i class="fas fa-search text-3xl mb-2"></i><p>Nenhum produto</p></div>';
         }
 
         function addCarrinho(id) {
@@ -894,11 +858,8 @@
 
         function removeFromCart(id) {
             const item = cart.find(x => x.id === id);
-            if (item && item.qty > 1) {
-                item.qty--;
-            } else {
-                cart = cart.filter(x => x.id !== id);
-            }
+            if (item && item.qty > 1) item.qty--;
+            else cart = cart.filter(x => x.id !== id);
             atualizarCarrinhoUI();
         }
 
@@ -926,11 +887,7 @@
                         </div>
                     </div>
                 </div>
-            `).join('');
-            
-            if (cart.length === 0) {
-                lista.innerHTML = '<div class="text-center py-4 text-gray-400 text-sm"><i class="fas fa-shopping-cart mb-2"></i><p>Carrinho vazio</p></div>';
-            }
+            `).join('') || '<div class="text-center py-4 text-gray-400 text-sm"><i class="fas fa-shopping-cart mb-2"></i><p>Carrinho vazio</p></div>';
             
             const total = cart.reduce((a, b) => a + (b.preco * b.qty), 0);
             document.getElementById('subtotalCarrinho').innerText = total.toFixed(2) + " MT";
@@ -947,11 +904,36 @@
         }
 
         // ==========================================
-        // FINALIZAR VENDA E GERAR RECIBO
+        // FINALIZAR VENDA - PERGUNTAR DADOS DO CLIENTE
         // ==========================================
         async function finalizarVenda() {
             if(cart.length === 0) return showToast('Carrinho vazio!', 'error');
             
+            // Abrir modal para dados do cliente (opcional)
+            document.getElementById('clienteModal').classList.remove('hidden');
+            document.getElementById('clienteNome').focus();
+        }
+
+        function pularDadosCliente() {
+            clienteDados = { nome: '', nuit: '' };
+            document.getElementById('clienteModal').classList.add('hidden');
+            document.getElementById('clienteNome').value = '';
+            document.getElementById('clienteNuit').value = '';
+            processarVenda();
+        }
+
+        function confirmarDadosCliente() {
+            clienteDados = {
+                nome: document.getElementById('clienteNome').value.trim(),
+                nuit: document.getElementById('clienteNuit').value.trim()
+            };
+            document.getElementById('clienteModal').classList.add('hidden');
+            document.getElementById('clienteNome').value = '';
+            document.getElementById('clienteNuit').value = '';
+            processarVenda();
+        }
+
+        async function processarVenda() {
             const btn = document.querySelector('button[onclick="finalizarVenda()"]');
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processando...';
@@ -964,18 +946,16 @@
 
                 const saleData = {
                     items: cart.map(i => ({ 
-                        id: i.id, 
-                        nome: i.nome, 
-                        qty: i.qty, 
-                        preco: i.preco,
-                        total: i.preco * i.qty
+                        id: i.id, nome: i.nome, qty: i.qty, preco: i.preco, total: i.preco * i.qty
                     })),
                     total: total,
                     lucro: lucroTotal,
                     data: hoje,
-                    timestamp: firebase.database.ServerValue.TIMESTAMP,
+                    timestamp: { ".sv": "timestamp" },
                     hora: agora.toLocaleTimeString('pt-MZ'),
-                    vendedor: currentUser["Nome"] || 'Atendente'
+                    vendedor: currentUser["Nome"] || 'Atendente',
+                    clienteNome: clienteDados.nome || '',
+                    clienteNuit: clienteDados.nuit || ''
                 };
 
                 const saleRef = await db.ref(`contas/${currentUserId}/sales`).push(saleData);
@@ -1001,13 +981,11 @@
                 cart = [];
                 atualizarCarrinhoUI();
                 
-                setTimeout(() => {
-                    mostrarRecibo();
-                }, 500);
+                setTimeout(() => mostrarRecibo(), 500);
                 
             } catch (err) {
+                console.error('Erro venda:', err);
                 showToast('Erro: ' + err.message, 'error');
-                console.error(err);
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-check-circle mr-2"></i>Finalizar';
@@ -1015,7 +993,7 @@
         }
 
         // ==========================================
-        // RECIBO POS
+        // RECIBO POS COM DADOS DO CLIENTE
         // ==========================================
         function mostrarRecibo() {
             if (!lastSaleData) return;
@@ -1027,6 +1005,9 @@
             const reciboNum = data.id.substring(0, 8).toUpperCase();
             const subtotal = data.total / 1.16;
             const iva = data.total - subtotal;
+
+            // Verificar se tem dados do cliente
+            const temCliente = data.clienteNome || data.clienteNuit;
 
             let html = `
                 <div class="receipt-center receipt-bold" style="font-size: 16px; margin-bottom: 5px;">
@@ -1047,6 +1028,21 @@
                     <div>Data: ${dataObj.toLocaleDateString('pt-MZ')} ${data.hora}</div>
                     <div>Vendedor: ${data.vendedor}</div>
                 </div>
+            `;
+
+            // ADICIONAR DADOS DO CLIENTE SE EXISTIREM
+            if (temCliente) {
+                html += `
+                    <div class="receipt-line"></div>
+                    <div style="margin: 8px 0; font-size: 11px;">
+                        <div class="receipt-bold" style="margin-bottom: 3px;">CLIENTE:</div>
+                        ${data.clienteNome ? `<div>Nome: ${data.clienteNome}</div>` : ''}
+                        ${data.clienteNuit ? `<div>NUIT: ${data.clienteNuit}</div>` : ''}
+                    </div>
+                `;
+            }
+
+            html += `
                 <div class="receipt-line"></div>
                 <div style="margin: 10px 0;">
                     <div style="display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 5px;">
@@ -1090,7 +1086,7 @@
                     <div style="margin-top: 5px;">Documento processado por computador</div>
                     <div style="margin-top: 5px; font-size: 9px;">Moz Caixa - Software de Gestão</div>
                 </div>
-                <div class="receipt-qrcode">
+                <div class="receipt-center" style="margin: 10px 0;">
                     <div style="border: 1px solid #000; padding: 5px; display: inline-block; font-size: 10px;">
                         [QR CODE]<br>
                         Consulte em: mozcaixa.co.mz
@@ -1118,8 +1114,12 @@
             const data = lastSaleData;
             let texto = `*${data.empresa}*\n`;
             texto += `Recibo Nº: ${data.id.substring(0, 8).toUpperCase()}\n`;
-            texto += `Data: ${new Date().toLocaleDateString('pt-MZ')}\n\n`;
-            texto += `*ITENS:*\n`;
+            texto += `Data: ${new Date().toLocaleDateString('pt-MZ')}\n`;
+            
+            if (data.clienteNome) texto += `\n*Cliente:* ${data.clienteNome}\n`;
+            if (data.clienteNuit) texto += `*NUIT Cliente:* ${data.clienteNuit}\n`;
+            
+            texto += `\n*ITENS:*\n`;
             data.items.forEach(item => {
                 texto += `${item.nome} - ${item.qty} x ${item.preco.toFixed(2)}MT = ${(item.qty * item.preco).toFixed(2)}MT\n`;
             });
@@ -1196,10 +1196,17 @@
             if (e.target === e.currentTarget) fecharModal();
         });
 
+        document.getElementById('clienteModal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) {
+                // Não fechar ao clicar fora, só pelos botões
+            }
+        });
+
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 fecharModal();
                 fecharRecibo();
+                // Não fechar clienteModal com ESC para evitar perda de dados
             }
         });
     </script>
