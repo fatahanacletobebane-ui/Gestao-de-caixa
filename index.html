@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-MZ">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Moz Caixa - PDV Profissional</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .hidden { display: none; }
+        .active-tab { border-bottom: 4px solid #7c3aed; color: #7c3aed; }
+        body { background-color: #f8fafc; -webkit-tap-highlight-color: transparent; }
+    </style>
+</head>
+<body class="font-sans">
+
+    <div id="lockScreen" class="fixed inset-0 z-[100] bg-slate-900 text-white flex flex-col items-center justify-center p-6 text-center hidden">
+        <i class="fas fa-lock text-6xl text-amber-500 mb-4"></i>
+        <h1 id="lockMessage" class="text-2xl font-bold mb-6">Acesso Bloqueado</h1>
+        <div class="bg-slate-800 p-4 rounded-xl mb-6 w-full max-w-sm">
+            <p class="text-sm text-slate-400 mb-2">Insira o código de ativação PRO</p>
+            <input type="text" id="activationInput" class="w-full bg-slate-700 p-3 rounded text-center text-xl font-mono" placeholder="XXXX-XXXX">
+        </div>
+        <button onclick="activatePro()" class="bg-violet-600 w-full max-w-sm py-4 rounded-xl font-bold">Ativar Sistema</button>
+    </div>
+
+    <nav id="bottomNav" class="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around p-2 z-50">
+        <button onclick="showSection('pos')" class="flex flex-col items-center p-2 text-slate-500" id="btn-pos">
+            <i class="fas fa-shopping-cart text-xl"></i><span class="text-[10px]">Vendas</span>
+        </button>
+        <button onclick="showSection('stock')" class="flex flex-col items-center p-2 text-slate-500" id="btn-stock">
+            <i class="fas fa-box text-xl"></i><span class="text-[10px]">Estoque</span>
+        </button>
+        <button onclick="showSection('reports')" class="flex flex-col items-center p-2 text-slate-500" id="btn-reports">
+            <i class="fas fa-chart-line text-xl"></i><span class="text-[10px]">Relatórios</span>
+        </button>
+        <button onclick="logout()" class="flex flex-col items-center p-2 text-red-500">
+            <i class="fas fa-sign-out-alt text-xl"></i><span class="text-[10px]">Sair</span>
+        </button>
+    </nav>
+
+    <div class="p-4 pb-20">
+        <section id="posSection" class="fade-in">
+            <h2 class="text-xl font-black mb-4">Moz Caixa <span class="text-xs bg-violet-100 text-violet-600 px-2 py-1 rounded">POS</span></h2>
+            <div class="mb-4">
+                <input type="text" id="searchBar" oninput="renderPosProducts()" placeholder="Buscar produto..." class="w-full p-3 rounded-xl border-2 border-slate-200">
+            </div>
+            <div id="posGrid" class="grid grid-cols-2 gap-3 mb-4"></div>
+            
+            <div class="bg-white p-4 rounded-2xl shadow-xl border border-slate-200">
+                <h3 class="font-bold mb-2">Carrinho</h3>
+                <div id="cartList" class="max-h-40 overflow-y-auto mb-4 text-sm space-y-2"></div>
+                <div class="flex justify-between font-black text-lg border-t pt-2">
+                    <span>Total:</span>
+                    <span id="cartTotal">0.00 MT</span>
+                </div>
+                <button onclick="finalizeSale()" class="w-full bg-green-600 text-white py-4 rounded-xl mt-4 font-bold shadow-lg">FINALIZAR VENDA</button>
+            </div>
+        </section>
+
+        <section id="stockSection" class="hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">Estoque</h2>
+                <button onclick="toggleModal('productModal')" class="bg-violet-600 text-white p-2 rounded-lg text-sm">+ Novo</button>
+            </div>
+            <div id="stockList" class="space-y-3"></div>
+        </section>
+
+        <section id="reportsSection" class="hidden">
+            <h2 class="text-xl font-bold mb-4">Relatório Diário</h2>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="bg-white p-4 rounded-xl shadow-sm border">
+                    <p class="text-xs text-slate-500">Vendas de Hoje</p>
+                    <p id="repSales" class="text-xl font-black">0.00 MT</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm border">
+                    <p class="text-xs text-slate-500">Lucro Estimado</p>
+                    <p id="repProfit" class="text-xl font-black text-green-600">0.00 MT</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div id="productModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full rounded-2xl p-6 max-h-[90vh] overflow-y-auto">
+            <h3 class="font-bold text-lg mb-4">Cadastrar Produto</h3>
+            <div class="space-y-3">
+                <input type="text" id="pName" placeholder="Nome do Produto" class="w-full p-3 border rounded-xl">
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="number" id="pPrice" placeholder="Preço Venda" class="p-3 border rounded-xl">
+                    <input type="number" id="pCost" placeholder="Preço Custo" class="p-3 border rounded-xl">
+                </div>
+                <input type="number" id="pQty" placeholder="Quantidade em Estoque" class="w-full p-3 border rounded-xl">
+                <select id="pDebt" class="w-full p-3 border rounded-xl">
+                    <option value="Não">Sem dívida com fornecedor</option>
+                    <option value="Sim">Com dívida com fornecedor</option>
+                </select>
+            </div>
+            <div class="flex gap-2 mt-6">
+                <button onclick="toggleModal('productModal')" class="flex-1 py-3 border rounded-xl">Cancelar</button>
+                <button onclick="saveProduct()" class="flex-1 py-3 bg-violet-600 text-white rounded-xl font-bold">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // CONFIGURAÇÃO FIREBASE
+        const firebaseConfig = {
+            apiKey: "AIzaSyBtEE6FKPFH9Bv2DhZNlb865iVsaX_2kpw",
+            authDomain: "casa-de-jogos-ed385.firebaseapp.com",
+            databaseURL: "https://casa-de-jogos-ed385-default-rtdb.firebaseio.com",
+            projectId: "casa-de-jogos-ed385",
+            storageBucket: "casa-de-jogos-ed385.firebasestorage.app",
+            messagingSenderId: "400751100510",
+            appId: "1:400751100510:web:e195695191607d02e46acf"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const auth = firebase.auth();
+
+        let currentUid = null;
+        let products = [];
+        let cart = [];
+        let userProfile = {};
+
+        // INICIALIZAÇÃO E PERSISTÊNCIA
+        auth.onAuthStateChanged(user => {
+            if(user) {
+                currentUid = user.uid;
+                loadData();
+            } else {
+                // Para simplificar no celular, se não houver user, cria um ou pede login
+                // Aqui você pode redirecionar para sua página de login
+                window.location.href = "login.html"; 
+            }
+        });
+
+        function loadData() {
+            // Perfil e Segurança
+            db.ref(`users/${currentUid}/profile`).on('value', snap => {
+                userProfile = snap.val() || {};
+                checkSecurity();
+            });
+
+            // Produtos
+            db.ref(`users/${currentUid}/products`).on('value', snap => {
+                products = [];
+                snap.forEach(child => {
+                    products.push({ id: child.key, ...child.val() });
+                });
+                renderPosProducts();
+                renderStock();
+            });
+
+            // Relatórios (Vendas de hoje)
+            const today = new Date().toISOString().split('T')[0];
+            db.ref(`users/${currentUid}/sales`).on('value', snap => {
+                let total = 0; let lucro = 0; let count = 0;
+                snap.forEach(s => {
+                    const sale = s.val();
+                    if(sale.date === today) {
+                        total += sale.total;
+                        lucro += (sale.lucro || 0);
+                    }
+                    count++;
+                });
+                document.getElementById('repSales').innerText = total.toFixed(2) + " MT";
+                document.getElementById('repProfit').innerText = lucro.toFixed(2) + " MT";
+                userProfile.totalSalesCount = count;
+            });
+        }
+
+        function checkSecurity() {
+            const now = new Date().getTime();
+            const prazo = new Date(userProfile.prazo).getTime();
+            
+            if (userProfile.activacaoPro === "OFF" && (userProfile.totalSalesCount >= 50)) {
+                showLock("Limite de 50 vendas atingido. Ative o PRO!");
+            } else if (userProfile.activacaoPro !== "OFF" && now > prazo) {
+                showLock("Seu prazo PRO expirou. Renove agora!");
+            }
+        }
+
+        function showLock(msg) {
+            document.getElementById('lockScreen').classList.remove('hidden');
+            document.getElementById('lockMessage').innerText = msg;
+        }
+
+        // FUNÇÕES DE PRODUTO
+        function saveProduct() {
+            const name = document.getElementById('pName').value;
+            const price = parseFloat(document.getElementById('pPrice').value);
+            const cost = parseFloat(document.getElementById('pCost').value);
+            const qty = parseInt(document.getElementById('pQty').value);
+            const debt = document.getElementById('pDebt').value;
+
+            if(!name || !price) return alert("Preencha os campos!");
+
+            db.ref(`users/${currentUid}/products`).push({
+                name, price, cost, qty, debt, 
+                lucroUnitario: (price - cost)
+            });
+            
+            toggleModal('productModal');
+        }
+
+        // VENDAS (POS)
+        function renderPosProducts() {
+            const query = document.getElementById('searchBar').value.toLowerCase();
+            const grid = document.getElementById('posGrid');
+            grid.innerHTML = "";
+
+            products.filter(p => p.name.toLowerCase().includes(query) && p.qty > 0).forEach(p => {
+                grid.innerHTML += `
+                    <div onclick="addToCart('${p.id}')" class="bg-white p-3 rounded-xl shadow-sm border border-slate-200 active:scale-95 transition">
+                        <p class="font-bold text-sm truncate">${p.name}</p>
+                        <p class="text-violet-600 font-black">${p.price.toFixed(2)} MT</p>
+                        <p class="text-[10px] text-slate-400">Estoque: ${p.qty}</p>
+                    </div>
+                `;
+            });
+        }
+
+        function addToCart(id) {
+            const p = products.find(item => item.id === id);
+            const inCart = cart.find(item => item.id === id);
+            if(inCart) {
+                if(inCart.qty < p.qty) inCart.qty++;
+            } else {
+                cart.push({ ...p, qty: 1 });
+            }
+            renderCart();
+        }
+
+        function renderCart() {
+            const list = document.getElementById('cartList');
+            list.innerHTML = cart.map(i => `
+                <div class="flex justify-between items-center bg-slate-50 p-2 rounded">
+                    <span>${i.name} (x${i.qty})</span>
+                    <span class="font-bold">${(i.price * i.qty).toFixed(2)} MT</span>
+                </div>
+            `).join('');
+            
+            const total = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+            document.getElementById('cartTotal').innerText = total.toFixed(2) + " MT";
+        }
+
+        async function finalizeSale() {
+            if(cart.length === 0) return;
+            
+            const total = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+            const totalLucro = cart.reduce((sum, i) => sum + (i.lucroUnitario * i.qty), 0);
+            const today = new Date().toISOString().split('T')[0];
+
+            const updates = {};
+            cart.forEach(item => {
+                updates[`users/${currentUid}/products/${item.id}/qty`] = item.qtyAtual - item.qty; // Note: precisa pegar qty atualizado
+                // Simplificado para o exemplo, o ideal é usar transação ou ref de estoque
+            });
+
+            // Salvar Venda
+            await db.ref(`users/${currentUid}/sales`).push({
+                items: cart,
+                total: total,
+                lucro: totalLucro,
+                date: today,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            });
+
+            // Abater Estoque Real
+            for(let item of cart) {
+                const pRef = db.ref(`users/${currentUid}/products/${item.id}/qty`);
+                pRef.set(firebase.database.ServerValue.increment(-item.qty));
+            }
+
+            alert("Venda Concluída!");
+            cart = [];
+            renderCart();
+        }
+
+        // UTILITÁRIOS
+        function showSection(id) {
+            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+            document.getElementById(id + 'Section').classList.remove('hidden');
+        }
+
+        function toggleModal(id) {
+            document.getElementById(id).classList.toggle('hidden');
+        }
+
+        function logout() {
+            auth.signOut();
+        }
+    </script>
+</body>
+</html>
