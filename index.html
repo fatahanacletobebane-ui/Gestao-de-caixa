@@ -19,68 +19,101 @@
         .btn-primary { background: linear-gradient(135deg, #7c3aed, #6d28d9); color: white; }
         .btn-success { background: linear-gradient(135deg, #10b981, #059669); color: white; }
         .btn-danger { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; }
-        .btn-warning { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
         .glass { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); }
         .animate-fade { animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .product-card:active { transform: scale(0.95); }
         .cart-item { transition: all 0.2s; }
-        .cart-item:hover { background: #f8fafc; }
-        input:focus { ring: 2px; ring-color: #7c3aed; }
+        .pin-input { width: 50px; height: 60px; text-align: center; font-size: 24px; font-weight: bold; border: 2px solid #e5e7eb; border-radius: 12px; margin: 0 5px; }
+        .pin-input:focus { border-color: #7c3aed; outline: none; }
         /* Admin Console Styles */
         .admin-nav { background: #1e293b; color: white; }
         .admin-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
         .stat-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px; padding: 20px; }
-        .table-row:hover { background: #f8fafc; }
     </style>
 </head>
 <body class="pb-24">
 
-    <!-- TELA DE AUTENTICAÇÃO -->
-    <div id="authScreen" class="fixed inset-0 bg-gradient-to-br from-violet-700 to-purple-900 z-[100] flex items-center justify-center p-6">
+    <!-- TELA DE ACESSO (PIN ou Admin) -->
+    <div id="accessScreen" class="fixed inset-0 bg-gradient-to-br from-violet-700 to-purple-900 z-[100] flex items-center justify-center p-6">
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl animate-fade">
-            <div class="text-center mb-6">
-                <div class="w-16 h-16 bg-violet-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <i class="fas fa-store text-2xl text-violet-600"></i>
-                </div>
-                <h1 class="text-2xl font-black text-gray-800">Moz Caixa</h1>
-                <p class="text-sm text-gray-500">Sistema de Gestão Comercial</p>
-            </div>
             
-            <div id="loginForm">
-                <input type="email" id="email" placeholder="Email" class="w-full p-4 bg-gray-100 rounded-xl mb-3 outline-none focus:ring-2 focus:ring-violet-500 transition">
-                <input type="password" id="pass" placeholder="Senha" class="w-full p-4 bg-gray-100 rounded-xl mb-4 outline-none focus:ring-2 focus:ring-violet-500 transition">
-                <button onclick="handleLogin()" class="w-full btn-primary py-4 rounded-xl font-bold mb-4 shadow-lg hover:shadow-xl transition transform hover:-translate-y-0.5">
-                    <i class="fas fa-sign-in-alt mr-2"></i>Entrar
-                </button>
-                <div class="flex justify-between text-sm">
-                    <button onclick="toggleAuth()" class="text-violet-600 font-bold">Criar Conta</button>
-                    <button onclick="toggleAdminLogin()" class="text-gray-500 hover:text-violet-600">Admin Console</button>
+            <!-- Seleção de Modo -->
+            <div id="modeSelect">
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 bg-violet-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-store text-2xl text-violet-600"></i>
+                    </div>
+                    <h1 class="text-2xl font-black text-gray-800">Moz Caixa</h1>
+                    <p class="text-sm text-gray-500">Sistema de Gestão Comercial</p>
+                </div>
+
+                <div class="space-y-3">
+                    <button onclick="showPinLogin()" class="w-full btn-primary py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transition">
+                        <i class="fas fa-user mr-2"></i>Acessar Minha Conta
+                    </button>
+                    <button onclick="showNewAccount()" class="w-full bg-gray-100 text-gray-700 py-4 rounded-xl font-bold hover:bg-gray-200 transition">
+                        <i class="fas fa-plus-circle mr-2"></i>Nova Conta
+                    </button>
+                    <button onclick="showAdminLogin()" class="w-full bg-slate-800 text-white py-4 rounded-xl font-bold hover:bg-slate-900 transition">
+                        <i class="fas fa-crown mr-2"></i>Admin Console
+                    </button>
                 </div>
             </div>
 
-            <div id="registerForm" class="hidden">
-                <input type="text" id="regEmpresa" placeholder="Nome da Empresa" class="w-full p-3 bg-gray-100 rounded-xl mb-2 outline-none">
-                <input type="text" id="regNuit" placeholder="NUIT" class="w-full p-3 bg-gray-100 rounded-xl mb-2 outline-none">
-                <input type="email" id="regEmail" placeholder="Email" class="w-full p-3 bg-gray-100 rounded-xl mb-2 outline-none">
-                <input type="password" id="regPass" placeholder="Senha (min 6 chars)" class="w-full p-3 bg-gray-100 rounded-xl mb-3 outline-none">
-                <button onclick="handleRegister()" class="w-full btn-success py-4 rounded-xl font-bold mb-4 shadow-lg">
-                    <i class="fas fa-user-plus mr-2"></i>Criar Conta
+            <!-- Login com PIN -->
+            <div id="pinLoginForm" class="hidden">
+                <button onclick="backToMode()" class="mb-4 text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-arrow-left mr-2"></i>Voltar
                 </button>
-                <button onclick="toggleAuth()" class="w-full text-gray-400 text-sm hover:text-gray-600">Voltar ao Login</button>
+                <h2 class="text-xl font-bold text-center mb-2">Digite seu PIN</h2>
+                <p class="text-sm text-gray-500 text-center mb-6">Acesso rápido à sua loja</p>
+                
+                <div class="flex justify-center mb-6">
+                    <input type="password" id="pin1" class="pin-input" maxlength="1" onkeyup="movePin(1, event)">
+                    <input type="password" id="pin2" class="pin-input" maxlength="1" onkeyup="movePin(2, event)">
+                    <input type="password" id="pin3" class="pin-input" maxlength="1" onkeyup="movePin(3, event)">
+                    <input type="password" id="pin4" class="pin-input" maxlength="1" onkeyup="movePin(4, event)">
+                </div>
+                
+                <button onclick="loginWithPin()" class="w-full btn-primary py-4 rounded-xl font-bold shadow-lg">
+                    <i class="fas fa-unlock mr-2"></i>Entrar
+                </button>
+                
+                <p class="text-center mt-4 text-sm text-gray-500">
+                    Esqueceu o PIN? Use o email cadastrado
+                </p>
             </div>
 
-            <!-- Admin Login Form -->
+            <!-- Nova Conta -->
+            <div id="newAccountForm" class="hidden">
+                <button onclick="backToMode()" class="mb-4 text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-arrow-left mr-2"></i>Voltar
+                </button>
+                <h2 class="text-xl font-bold mb-4">Criar Nova Conta</h2>
+                
+                <div class="space-y-3">
+                    <input type="text" id="newEmpresa" placeholder="Nome da Empresa" class="w-full p-4 bg-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-violet-500">
+                    <input type="text" id="newNuit" placeholder="NUIT (opcional)" class="w-full p-4 bg-gray-100 rounded-xl outline-none">
+                    <input type="text" id="newPin" placeholder="Criar PIN (4 dígitos)" maxlength="4" class="w-full p-4 bg-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-violet-500">
+                    <button onclick="createAccount()" class="w-full btn-success py-4 rounded-xl font-bold shadow-lg">
+                        <i class="fas fa-check mr-2"></i>Criar Conta
+                    </button>
+                </div>
+            </div>
+
+            <!-- Admin Login -->
             <div id="adminLoginForm" class="hidden">
+                <button onclick="backToMode()" class="mb-4 text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-arrow-left mr-2"></i>Voltar
+                </button>
                 <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4">
                     <p class="text-xs text-amber-700 text-center"><i class="fas fa-shield-alt mr-1"></i>Acesso Restrito - Administradores</p>
                 </div>
-                <input type="email" id="adminEmail" placeholder="Email Admin" class="w-full p-4 bg-gray-100 rounded-xl mb-3 outline-none">
-                <input type="password" id="adminPass" placeholder="Senha Admin" class="w-full p-4 bg-gray-100 rounded-xl mb-4 outline-none">
-                <button onclick="handleAdminLogin()" class="w-full bg-slate-800 text-white py-4 rounded-xl font-bold mb-4 shadow-lg">
+                <input type="password" id="adminPin" placeholder="PIN Admin" maxlength="6" class="w-full p-4 bg-gray-100 rounded-xl mb-4 outline-none text-center text-2xl tracking-widest">
+                <button onclick="loginAdmin()" class="w-full bg-slate-800 text-white py-4 rounded-xl font-bold shadow-lg">
                     <i class="fas fa-lock mr-2"></i>Acessar Consola
                 </button>
-                <button onclick="toggleAdminLogin()" class="w-full text-gray-400 text-sm hover:text-gray-600">Voltar</button>
             </div>
         </div>
     </div>
@@ -95,7 +128,7 @@
             <button onclick="ativarPro()" class="w-full bg-gradient-to-r from-amber-500 to-orange-600 text-white py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transition">
                 <i class="fas fa-crown mr-2"></i>ATIVAR PRO
             </button>
-            <button onclick="auth.signOut()" class="mt-4 text-gray-500 text-sm hover:text-white transition">Sair da Conta</button>
+            <button onclick="logout()" class="mt-4 text-gray-500 text-sm hover:text-white transition">Sair da Conta</button>
         </div>
     </div>
 
@@ -117,7 +150,7 @@
                 <button onclick="syncDataManual()" class="p-2 text-gray-400 hover:text-violet-600 transition" title="Sincronizar">
                     <i class="fas fa-sync-alt" id="syncIcon"></i>
                 </button>
-                <button onclick="auth.signOut()" class="p-2 text-red-500 hover:text-red-600 transition" title="Sair">
+                <button onclick="logout()" class="p-2 text-red-500 hover:text-red-600 transition" title="Sair">
                     <i class="fas fa-sign-out-alt"></i>
                 </button>
             </div>
@@ -214,10 +247,6 @@
                         <button onclick="setReportPeriod('week')" class="flex-1 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm font-bold">Semana</button>
                         <button onclick="setReportPeriod('month')" class="flex-1 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm font-bold">Mês</button>
                     </div>
-                    <div id="salesChart" class="h-48 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400">
-                        <i class="fas fa-chart-line text-4xl mr-3"></i>
-                        <span>Gráfico de Vendas</span>
-                    </div>
                 </div>
 
                 <div class="card">
@@ -245,7 +274,6 @@
 
     <!-- ADMIN CONSOLE -->
     <div id="adminConsole" class="hidden min-h-screen bg-gray-100">
-        <!-- Admin Sidebar -->
         <aside class="fixed left-0 top-0 bottom-0 w-64 admin-nav z-50 hidden md:flex flex-col">
             <div class="p-6 border-b border-gray-700">
                 <h1 class="text-xl font-black"><i class="fas fa-crown text-amber-400 mr-2"></i>Admin</h1>
@@ -256,32 +284,22 @@
                     <i class="fas fa-tachometer-alt"></i>Dashboard
                 </button>
                 <button onclick="adminNav('users')" class="admin-nav-item w-full text-left p-3 rounded-xl hover:bg-white/10 transition flex items-center gap-3">
-                    <i class="fas fa-users"></i>Utilizadores
+                    <i class="fas fa-users"></i>Contas
                 </button>
                 <button onclick="adminNav('licenses')" class="admin-nav-item w-full text-left p-3 rounded-xl hover:bg-white/10 transition flex items-center gap-3">
-                    <i class="fas fa-key"></i>Licenças
-                </button>
-                <button onclick="adminNav('analytics')" class="admin-nav-item w-full text-left p-3 rounded-xl hover:bg-white/10 transition flex items-center gap-3">
-                    <i class="fas fa-chart-bar"></i>Análises
+                    <i class="fas fa-key"></i>Licenças PRO
                 </button>
                 <button onclick="adminNav('settings')" class="admin-nav-item w-full text-left p-3 rounded-xl hover:bg-white/10 transition flex items-center gap-3">
                     <i class="fas fa-cog"></i>Configurações
                 </button>
             </nav>
             <div class="p-4 border-t border-gray-700">
-                <button onclick="logoutAdmin()" class="w-full p-3 rounded-xl bg-red-500/20 text-red-400 hover:bg-red-500/30 transition flex items-center justify-center gap-2">
+                <button onclick="logout()" class="w-full p-3 rounded-xl bg-red-500/20 text-red-400 hover:bg-red-500/30 transition flex items-center justify-center gap-2">
                     <i class="fas fa-sign-out-alt"></i>Sair
                 </button>
             </div>
         </aside>
 
-        <!-- Admin Mobile Header -->
-        <header class="md:hidden admin-nav p-4 flex justify-between items-center sticky top-0 z-40">
-            <h1 class="font-black text-lg"><i class="fas fa-crown text-amber-400 mr-2"></i>Admin</h1>
-            <button onclick="toggleAdminMobileMenu()" class="p-2"><i class="fas fa-bars"></i></button>
-        </header>
-
-        <!-- Admin Content -->
         <main class="md:ml-64 p-6">
             <!-- Dashboard -->
             <section id="admin-dashboard" class="animate-fade">
@@ -289,42 +307,27 @@
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                     <div class="admin-card border-l-4 border-violet-500">
-                        <p class="text-sm text-gray-500 uppercase">Total Utilizadores</p>
+                        <p class="text-sm text-gray-500 uppercase">Total Contas</p>
                         <h3 id="adminTotalUsers" class="text-3xl font-black text-gray-800">0</h3>
-                        <p class="text-xs text-green-600 mt-1"><i class="fas fa-arrow-up mr-1"></i>Activos</p>
                     </div>
                     <div class="admin-card border-l-4 border-amber-500">
                         <p class="text-sm text-gray-500 uppercase">Licenças PRO</p>
                         <h3 id="adminProLicenses" class="text-3xl font-black text-gray-800">0</h3>
-                        <p class="text-xs text-amber-600 mt-1"><i class="fas fa-crown mr-1"></i>Premium</p>
                     </div>
                     <div class="admin-card border-l-4 border-blue-500">
                         <p class="text-sm text-gray-500 uppercase">Vendas Hoje</p>
                         <h3 id="adminTotalSales" class="text-3xl font-black text-gray-800">0</h3>
-                        <p class="text-xs text-gray-500 mt-1">Global</p>
                     </div>
                     <div class="admin-card border-l-4 border-green-500">
-                        <p class="text-sm text-gray-500 uppercase">Receita Estimada</p>
+                        <p class="text-sm text-gray-500 uppercase">Receita PRO</p>
                         <h3 id="adminRevenue" class="text-3xl font-black text-gray-800">0 MT</h3>
-                        <p class="text-xs text-green-600 mt-1">Este mês</p>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="admin-card">
-                        <h3 class="font-bold text-gray-800 mb-4">Actividade Recente</h3>
-                        <div id="adminRecentActivity" class="space-y-3 max-h-96 overflow-y-auto">
-                            <p class="text-gray-400 text-center py-8">Sem actividade registada</p>
-                        </div>
-                    </div>
-                    <div class="admin-card">
-                        <h3 class="font-bold text-gray-800 mb-4">Distribuição de Planos</h3>
-                        <div class="flex items-center justify-center h-48 bg-gray-50 rounded-xl">
-                            <div class="text-center">
-                                <i class="fas fa-chart-pie text-4xl text-violet-600 mb-2"></i>
-                                <p class="text-sm text-gray-500">Gráfico de distribuição</p>
-                            </div>
-                        </div>
+                <div class="admin-card">
+                    <h3 class="font-bold text-gray-800 mb-4">Actividade Recente</h3>
+                    <div id="adminRecentActivity" class="space-y-3 max-h-96 overflow-y-auto">
+                        <p class="text-gray-400 text-center py-8">Carregando...</p>
                     </div>
                 </div>
             </section>
@@ -332,13 +335,10 @@
             <!-- Users Management -->
             <section id="admin-users" class="hidden animate-fade">
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-black text-gray-800">Gestão de Utilizadores</h2>
-                    <div class="flex gap-2">
-                        <input type="text" id="searchUsers" placeholder="Procurar..." class="px-4 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-violet-500">
-                        <button onclick="refreshUsers()" class="btn-primary px-4 py-2 rounded-lg">
-                            <i class="fas fa-sync-alt"></i>
-                        </button>
-                    </div>
+                    <h2 class="text-2xl font-black text-gray-800">Gestão de Contas</h2>
+                    <button onclick="refreshUsers()" class="btn-primary px-4 py-2 rounded-lg">
+                        <i class="fas fa-sync-alt mr-2"></i>Actualizar
+                    </button>
                 </div>
 
                 <div class="admin-card overflow-x-auto">
@@ -346,15 +346,14 @@
                         <thead class="border-b">
                             <tr>
                                 <th class="pb-3 font-bold text-gray-600">Empresa</th>
-                                <th class="pb-3 font-bold text-gray-600">Email</th>
+                                <th class="pb-3 font-bold text-gray-600">PIN</th>
                                 <th class="pb-3 font-bold text-gray-600">Plano</th>
                                 <th class="pb-3 font-bold text-gray-600">Vendas</th>
-                                <th class="pb-3 font-bold text-gray-600">Estado</th>
                                 <th class="pb-3 font-bold text-gray-600">Acções</th>
                             </tr>
                         </thead>
                         <tbody id="adminUsersTable" class="text-sm">
-                            <tr><td colspan="6" class="py-8 text-center text-gray-400">Carregando...</td></tr>
+                            <tr><td colspan="5" class="py-8 text-center text-gray-400">Carregando...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -362,11 +361,11 @@
 
             <!-- Licenses -->
             <section id="admin-licenses" class="hidden animate-fade">
-                <h2 class="text-2xl font-black text-gray-800 mb-6">Gestão de Licenças</h2>
+                <h2 class="text-2xl font-black text-gray-800 mb-6">Gestão de Licenças PRO</h2>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <div class="admin-card">
-                        <h3 class="font-bold text-gray-800 mb-4">Gerar Código PRO</h3>
+                        <h3 class="font-bold text-gray-800 mb-4">Gerar Novo Código</h3>
                         <div class="space-y-3">
                             <select id="licenseDuration" class="w-full p-3 border rounded-xl outline-none">
                                 <option value="30">30 Dias</option>
@@ -387,20 +386,11 @@
                     </div>
 
                     <div class="admin-card">
-                        <h3 class="font-bold text-gray-800 mb-4">Códigos Activos</h3>
+                        <h3 class="font-bold text-gray-800 mb-4">Códigos Gerados</h3>
                         <div id="activeLicensesList" class="space-y-2 max-h-64 overflow-y-auto">
-                            <p class="text-gray-400 text-center py-4">Nenhum código gerado</p>
+                            <p class="text-gray-400 text-center py-4">Nenhum código</p>
                         </div>
                     </div>
-                </div>
-            </section>
-
-            <!-- Analytics -->
-            <section id="admin-analytics" class="hidden animate-fade">
-                <h2 class="text-2xl font-black text-gray-800 mb-6">Análises Globais</h2>
-                <div class="admin-card h-96 flex items-center justify-center text-gray-400">
-                    <i class="fas fa-chart-area text-6xl mr-4"></i>
-                    <span class="text-xl">Módulo de Analytics em desenvolvimento</span>
                 </div>
             </section>
 
@@ -411,19 +401,17 @@
                     <div class="space-y-4">
                         <div class="flex justify-between items-center p-4 bg-gray-50 rounded-xl">
                             <div>
-                                <p class="font-bold text-gray-800">Modo de Manutenção</p>
-                                <p class="text-sm text-gray-500">Bloquear acesso de todos os utilizadores</p>
+                                <p class="font-bold text-gray-800">Limite de Teste</p>
+                                <p class="text-sm text-gray-500">Vendas gratuitas antes da activação PRO</p>
                             </div>
-                            <button onclick="toggleMaintenance()" id="maintenanceToggle" class="w-14 h-8 bg-gray-300 rounded-full relative transition-colors duration-300">
-                                <span class="absolute left-1 top-1 w-6 h-6 bg-white rounded-full transition-transform duration-300"></span>
-                            </button>
+                            <input type="number" id="trialLimit" value="50" class="w-20 p-2 border rounded-lg text-center font-bold">
                         </div>
                         <div class="flex justify-between items-center p-4 bg-gray-50 rounded-xl">
                             <div>
-                                <p class="font-bold text-gray-800">Limite de Teste</p>
-                                <p class="text-sm text-gray-500">Vendas gratuitas antes da activação</p>
+                                <p class="font-bold text-gray-800">Preço PRO (Mensal)</p>
+                                <p class="text-sm text-gray-500">Valor em MT</p>
                             </div>
-                            <input type="number" id="trialLimit" value="50" class="w-20 p-2 border rounded-lg text-center font-bold">
+                            <input type="number" id="proPrice" value="500" class="w-24 p-2 border rounded-lg text-center font-bold">
                         </div>
                         <button onclick="saveSettings()" class="w-full btn-primary py-3 rounded-xl font-bold mt-4">
                             <i class="fas fa-save mr-2"></i>Guardar Alterações
@@ -500,7 +488,6 @@
             measurementId: "G-M77XQBB1TY"
         };
 
-        // Inicialização
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.database();
@@ -508,149 +495,262 @@
         // ==========================================
         // VARIÁVEIS GLOBAIS
         // ==========================================
-        let userState = null;
+        let currentUser = null;
+        let currentPin = null;
+        let isAdmin = false;
         let localProducts = [];
         let cart = [];
         let currentFilter = 'all';
-        let isAdmin = false;
         let reportPeriod = 'today';
+        let anonymousUserId = null;
 
-        // Admin credentials (em produção, use Firebase Auth com claims)
-        const ADMIN_EMAIL = "admin@mozcaixa.com";
-        const ADMIN_PASS = "admin123"; // Altere em produção!
+        // Configurações do sistema (do database)
+        let systemSettings = {
+            trialLimit: 50,
+            proPrice: 500,
+            adminPin: '123456' // PIN padrão para admin
+        };
 
         // ==========================================
-        // AUTENTICAÇÃO E ESTADO
+        // INICIALIZAÇÃO E AUTH ANÔNIMA
         // ==========================================
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                userState = user;
-                checkIfAdmin(user.email);
-            } else {
-                showAuth();
-            }
+        
+        // Fazer login anônimo automaticamente para obter UID
+        auth.signInAnonymously().then(cred => {
+            anonymousUserId = cred.user.uid;
+            console.log('Auth anônima OK:', anonymousUserId);
+            loadSystemSettings();
+        }).catch(err => {
+            console.error('Erro auth anônima:', err);
+            showToast('Erro de conexão', 'error');
         });
 
-        function checkIfAdmin(email) {
-            if (email === ADMIN_EMAIL) {
+        // Carregar configurações do sistema
+        function loadSystemSettings() {
+            db.ref('system/settings').on('value', snap => {
+                if (snap.exists()) {
+                    systemSettings = { ...systemSettings, ...snap.val() };
+                }
+            });
+        }
+
+        // ==========================================
+        // NAVEGAÇÃO ENTRE TELAS DE ACESSO
+        // ==========================================
+        function backToMode() {
+            document.getElementById('modeSelect').classList.remove('hidden');
+            document.getElementById('pinLoginForm').classList.add('hidden');
+            document.getElementById('newAccountForm').classList.add('hidden');
+            document.getElementById('adminLoginForm').classList.add('hidden');
+        }
+
+        function showPinLogin() {
+            document.getElementById('modeSelect').classList.add('hidden');
+            document.getElementById('pinLoginForm').classList.remove('hidden');
+            setTimeout(() => document.getElementById('pin1').focus(), 100);
+        }
+
+        function showNewAccount() {
+            document.getElementById('modeSelect').classList.add('hidden');
+            document.getElementById('newAccountForm').classList.remove('hidden');
+        }
+
+        function showAdminLogin() {
+            document.getElementById('modeSelect').classList.add('hidden');
+            document.getElementById('adminLoginForm').classList.remove('hidden');
+            setTimeout(() => document.getElementById('adminPin').focus(), 100);
+        }
+
+        // Navegação PIN automática
+        function movePin(pos, event) {
+            if (event.key >= '0' && event.key <= '9') {
+                const next = document.getElementById(`pin${pos + 1}`);
+                if (next) next.focus();
+            } else if (event.key === 'Backspace') {
+                const prev = document.getElementById(`pin${pos - 1}`);
+                if (prev) prev.focus();
+            }
+        }
+
+        // ==========================================
+        // CRIAÇÃO DE CONTA (SEM EMAIL)
+        // ==========================================
+        async function createAccount() {
+            const empresa = document.getElementById('newEmpresa').value.trim();
+            const nuit = document.getElementById('newNuit').value.trim();
+            const pin = document.getElementById('newPin').value.trim();
+
+            if (!empresa || !pin || pin.length !== 4) {
+                showToast('Preencha empresa e PIN (4 dígitos)', 'error');
+                return;
+            }
+
+            try {
+                // Verificar se PIN já existe
+                const pinSnap = await db.ref(`system/pins/${pin}`).once('value');
+                if (pinSnap.exists()) {
+                    showToast('Este PIN já está em uso. Escolha outro.', 'error');
+                    return;
+                }
+
+                // Criar conta no database
+                const accountData = {
+                    empresa: empresa,
+                    nuit: nuit || '',
+                    pin: pin,
+                    uid: anonymousUserId,
+                    activacaoPro: "OFF",
+                    prazo: new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0],
+                    vendasContador: 0,
+                    createdAt: firebase.database.ServerValue.TIMESTAMP,
+                    lastAccess: firebase.database.ServerValue.TIMESTAMP
+                };
+
+                // Salvar em múltiplos locais para fácil acesso
+                await db.ref(`accounts/${anonymousUserId}`).set(accountData);
+                await db.ref(`system/pins/${pin}`).set({ uid: anonymousUserId, empresa: empresa });
+                await db.ref(`system/accountsIndex/${anonymousUserId}`).set({ pin: pin, empresa: empresa });
+
+                currentUser = accountData;
+                currentPin = pin;
+                
+                showToast('Conta criada com sucesso!', 'success');
+                showMainApp();
+                syncData();
+            } catch (err) {
+                showToast('Erro ao criar conta: ' + err.message, 'error');
+            }
+        }
+
+        // ==========================================
+        // LOGIN COM PIN
+        // ==========================================
+        async function loginWithPin() {
+            const pin = [
+                document.getElementById('pin1').value,
+                document.getElementById('pin2').value,
+                document.getElementById('pin3').value,
+                document.getElementById('pin4').value
+            ].join('');
+
+            if (pin.length !== 4) {
+                showToast('Digite os 4 dígitos do PIN', 'error');
+                return;
+            }
+
+            try {
+                // Buscar conta pelo PIN
+                const pinSnap = await db.ref(`system/pins/${pin}`).once('value');
+                
+                if (!pinSnap.exists()) {
+                    showToast('PIN não encontrado', 'error');
+                    // Limpar inputs
+                    for(let i=1; i<=4; i++) document.getElementById(`pin${i}`).value = '';
+                    document.getElementById('pin1').focus();
+                    return;
+                }
+
+                const pinData = pinSnap.val();
+                const accountSnap = await db.ref(`accounts/${pinData.uid}`).once('value');
+                const accountData = accountSnap.val();
+
+                if (!accountData) {
+                    showToast('Erro: dados da conta não encontrados', 'error');
+                    return;
+                }
+
+                // Atualizar last access e UID atual (para segurança)
+                await db.ref(`accounts/${pinData.uid}/lastAccess`).set(firebase.database.ServerValue.TIMESTAMP);
+                await db.ref(`accounts/${pinData.uid}/uid`).set(anonymousUserId);
+
+                currentUser = accountData;
+                currentPin = pin;
+                currentUser.uid = pinData.uid; // Usar UID original da conta
+
+                showToast(`Bem-vindo, ${accountData.empresa}!`, 'success');
+                showMainApp();
+                syncData();
+            } catch (err) {
+                showToast('Erro ao entrar: ' + err.message, 'error');
+            }
+        }
+
+        // ==========================================
+        // LOGIN ADMIN
+        // ==========================================
+        async function loginAdmin() {
+            const pin = document.getElementById('adminPin').value;
+            
+            // Verificar PIN admin nas configurações
+            const settingsSnap = await db.ref('system/settings/adminPin').once('value');
+            const adminPin = settingsSnap.val() || systemSettings.adminPin;
+
+            if (pin === adminPin) {
                 isAdmin = true;
+                showToast('Admin console acessado', 'success');
                 showAdminConsole();
                 loadAdminData();
             } else {
-                isAdmin = false;
-                showMainApp();
-                syncData();
+                showToast('PIN de administrador inválido', 'error');
             }
         }
 
-        function showAuth() {
-            document.getElementById('authScreen').classList.remove('hidden');
-            document.getElementById('mainApp').classList.add('hidden');
-            document.getElementById('adminConsole').classList.add('hidden');
-        }
-
+        // ==========================================
+        // CONTROLE DE TELAS
+        // ==========================================
         function showMainApp() {
-            document.getElementById('authScreen').classList.add('hidden');
+            document.getElementById('accessScreen').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
             document.getElementById('adminConsole').classList.add('hidden');
         }
 
         function showAdminConsole() {
-            document.getElementById('authScreen').classList.add('hidden');
+            document.getElementById('accessScreen').classList.add('hidden');
             document.getElementById('mainApp').classList.add('hidden');
             document.getElementById('adminConsole').classList.remove('hidden');
         }
 
-        // ==========================================
-        // LOGIN HANDLERS
-        // ==========================================
-        async function handleLogin() {
-            const e = document.getElementById('email').value;
-            const p = document.getElementById('pass').value;
-            try { 
-                await auth.signInWithEmailAndPassword(e, p);
-                showToast('Login realizado com sucesso!', 'success');
-            } catch(err) { 
-                showToast(err.message, 'error');
-            }
-        }
-
-        async function handleRegister() {
-            const e = document.getElementById('regEmail').value;
-            const p = document.getElementById('regPass').value;
-            const n = document.getElementById('regEmpresa').value;
-            const nuit = document.getElementById('regNuit').value;
-
-            if (!e || !p || !n) {
-                showToast('Preencha todos os campos obrigatórios', 'error');
-                return;
-            }
-
-            try {
-                const res = await auth.createUserWithEmailAndPassword(e, p);
-                await db.ref(`users/${res.user.uid}/profile`).set({
-                    nomeEmpresa: n,
-                    nuit: nuit || '',
-                    email: e,
-                    activacaoPro: "OFF",
-                    prazo: new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0], // 30 dias trial
-                    vendasContador: 0,
-                    createdAt: firebase.database.ServerValue.TIMESTAMP
-                });
-                showToast('Conta criada! Bem-vindo ao Moz Caixa', 'success');
-            } catch(err) { 
-                showToast(err.message, 'error');
-            }
-        }
-
-        function handleAdminLogin() {
-            const e = document.getElementById('adminEmail').value;
-            const p = document.getElementById('adminPass').value;
+        function logout() {
+            currentUser = null;
+            currentPin = null;
+            isAdmin = false;
+            cart = [];
             
-            if (e === ADMIN_EMAIL && p === ADMIN_PASS) {
-                auth.signInWithEmailAndPassword(e, p).catch(err => {
-                    // Se não existir, cria
-                    auth.createUserWithEmailAndPassword(e, p).then(() => {
-                        db.ref('system/admin').set({ email: e, created: Date.now() });
-                    });
+            // Limpar PIN inputs
+            for(let i=1; i<=4; i++) document.getElementById(`pin${i}`).value = '';
+            document.getElementById('adminPin').value = '';
+            
+            backToMode();
+            document.getElementById('mainApp').classList.add('hidden');
+            document.getElementById('adminConsole').classList.add('hidden');
+            document.getElementById('accessScreen').classList.remove('hidden');
+            
+            // Nova auth anônima
+            auth.signOut().then(() => {
+                auth.signInAnonymously().then(cred => {
+                    anonymousUserId = cred.user.uid;
                 });
-            } else {
-                showToast('Credenciais de admin inválidas', 'error');
-            }
-        }
-
-        function toggleAuth() {
-            document.getElementById('loginForm').classList.toggle('hidden');
-            document.getElementById('registerForm').classList.toggle('hidden');
-            document.getElementById('adminLoginForm').classList.add('hidden');
-        }
-
-        function toggleAdminLogin() {
-            document.getElementById('loginForm').classList.add('hidden');
-            document.getElementById('registerForm').classList.add('hidden');
-            document.getElementById('adminLoginForm').classList.toggle('hidden');
-        }
-
-        function logoutAdmin() {
-            auth.signOut();
+            });
         }
 
         // ==========================================
         // SINCRONIZAÇÃO DE DADOS
         // ==========================================
         function syncData() {
-            if (!userState) return;
+            if (!currentUser) return;
+
+            const userRef = db.ref(`accounts/${currentUser.uid}`);
 
             // Perfil e Travas
-            db.ref(`users/${userState.uid}/profile`).on('value', snap => {
+            userRef.on('value', snap => {
                 const p = snap.val();
                 if (!p) return;
                 
-                document.getElementById('displayEmpresa').innerText = p.nomeEmpresa || 'Minha Loja';
+                document.getElementById('displayEmpresa').innerText = p.empresa || 'Minha Loja';
                 
                 const agora = new Date().getTime();
                 const dataPrazo = new Date(p.prazo).getTime();
-                const trialLimit = 50;
+                const trialLimit = systemSettings.trialLimit || 50;
 
                 if (p.activacaoPro === "OFF" && p.vendasContador >= trialLimit) {
                     showLock(`Limite de ${trialLimit} vendas atingido! Ative o PRO.`);
@@ -667,7 +767,7 @@
             });
 
             // Produtos
-            db.ref(`users/${userState.uid}/products`).on('value', snap => {
+            db.ref(`accounts/${currentUser.uid}/products`).on('value', snap => {
                 localProducts = [];
                 snap.forEach(c => { localProducts.push({ id: c.key, ...c.val() }); });
                 renderPOS();
@@ -675,12 +775,12 @@
                 document.getElementById('stockCount').innerText = `${localProducts.length} produtos`;
             });
 
-            // Vendas para relatórios
+            // Vendas
             loadReports();
         }
 
         function loadReports() {
-            db.ref(`users/${userState.uid}/sales`).on('value', snap => {
+            db.ref(`accounts/${currentUser.uid}/sales`).on('value', snap => {
                 updateReports(snap);
             });
         }
@@ -743,17 +843,6 @@
             reportPeriod = period;
             const labels = { today: 'Hoje', week: 'Última Semana', month: 'Este Mês' };
             document.getElementById('relPeriodo').innerText = labels[period];
-            
-            // Update button styles
-            const buttons = document.querySelectorAll('#sec-relatorios button');
-            buttons.forEach(btn => {
-                if(btn.innerText.toLowerCase().includes(period === 'today' ? 'hoje' : period === 'week' ? 'semana' : 'mês')) {
-                    btn.className = 'flex-1 py-2 bg-violet-100 text-violet-700 rounded-lg text-sm font-bold';
-                } else {
-                    btn.className = 'flex-1 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm font-bold';
-                }
-            });
-            
             loadReports();
         }
 
@@ -766,28 +855,27 @@
             const code = document.getElementById('codAtivacao').value.trim();
             if (!code) return showToast('Insira o código de ativação', 'error');
 
-            // Verificar código na base de dados admin
             const codeSnap = await db.ref(`system/licenses/${code}`).once('value');
             const codeData = codeSnap.val();
 
             if (codeData && !codeData.used) {
                 const duration = codeData.duration || 365;
-                const newDate = new Date();
                 
                 if (duration === 'lifetime') {
-                    await db.ref(`users/${userState.uid}/profile/activacaoPro`).set("LIFETIME");
-                    await db.ref(`users/${userState.uid}/profile/prazo`).set("lifetime");
+                    await db.ref(`accounts/${currentUser.uid}/activacaoPro`).set("LIFETIME");
+                    await db.ref(`accounts/${currentUser.uid}/prazo`).set("lifetime");
                 } else {
+                    const newDate = new Date();
                     newDate.setDate(newDate.getDate() + parseInt(duration));
-                    await db.ref(`users/${userState.uid}/profile/activacaoPro`).set("ON");
-                    await db.ref(`users/${userState.uid}/profile/prazo`).set(newDate.toISOString().split('T')[0]);
+                    await db.ref(`accounts/${currentUser.uid}/activacaoPro`).set("ON");
+                    await db.ref(`accounts/${currentUser.uid}/prazo`).set(newDate.toISOString().split('T')[0]);
                 }
                 
                 await db.ref(`system/licenses/${code}/used`).set(true);
-                await db.ref(`system/licenses/${code}/usedBy`).set(userState.uid);
+                await db.ref(`system/licenses/${code}/usedBy`).set(currentUser.uid);
                 await db.ref(`system/licenses/${code}/usedAt`).set(firebase.database.ServerValue.TIMESTAMP);
                 
-                showToast('Moz Caixa PRO activado com sucesso!', 'success');
+                showToast('Moz Caixa PRO activado!', 'success');
                 document.getElementById('lockScreen').classList.add('hidden');
             } else {
                 showToast('Código inválido ou já utilizado', 'error');
@@ -806,7 +894,7 @@
 
             if(!nome || !preco) return showToast("Preencha nome e preço", "error");
 
-            db.ref(`users/${userState.uid}/products`).push({
+            db.ref(`accounts/${currentUser.uid}/products`).push({
                 nome, 
                 preco, 
                 custo: custo || preco * 0.7, 
@@ -819,7 +907,6 @@
             fecharModal();
             showToast('Produto adicionado!', 'success');
             
-            // Limpar campos
             document.getElementById('pNome').value = '';
             document.getElementById('pPreco').value = '';
             document.getElementById('pCusto').value = '';
@@ -830,18 +917,15 @@
             const list = document.getElementById('listaEstoque');
             let filtered = localProducts;
             
-            if (currentFilter === 'low') {
-                filtered = localProducts.filter(p => p.qtd <= 5);
-            } else if (currentFilter === 'debt') {
-                filtered = localProducts.filter(p => p.divida === 'Sim');
-            }
+            if (currentFilter === 'low') filtered = localProducts.filter(p => p.qtd <= 5);
+            else if (currentFilter === 'debt') filtered = localProducts.filter(p => p.divida === 'Sim');
 
             list.innerHTML = filtered.map(p => `
                 <div class="card flex justify-between items-center group hover:shadow-md transition">
                     <div class="flex-1">
                         <p class="font-bold text-gray-800">${p.nome}</p>
                         <p class="text-xs text-gray-500">
-                            Venda: ${p.preco} MT | Custo: ${p.custo || '-'} MT | Lucro: ${p.lucroUnitario?.toFixed(2) || '-'} MT
+                            Venda: ${p.preco} MT | Custo: ${p.custo || '-'} MT
                             ${p.divida === 'Sim' ? '<span class="ml-2 text-amber-600 font-bold"><i class="fas fa-exclamation-triangle"></i> Dívida</span>' : ''}
                         </p>
                     </div>
@@ -862,10 +946,9 @@
 
         function filterStock(type) {
             currentFilter = type;
-            // Update button styles
             const buttons = document.querySelectorAll('#sec-estoque .flex.gap-2 button');
+            const types = ['all', 'low', 'debt'];
             buttons.forEach((btn, idx) => {
-                const types = ['all', 'low', 'debt'];
                 if (types[idx] === type) {
                     btn.className = 'px-4 py-2 bg-violet-600 text-white rounded-full text-sm font-bold whitespace-nowrap shadow-md';
                 } else {
@@ -876,8 +959,8 @@
         }
 
         function deleteProduct(id) {
-            if (confirm('Tem certeza que deseja remover este produto?')) {
-                db.ref(`users/${userState.uid}/products/${id}`).remove();
+            if (confirm('Remover este produto?')) {
+                db.ref(`accounts/${currentUser.uid}/products/${id}`).remove();
                 showToast('Produto removido', 'success');
             }
         }
@@ -972,9 +1055,7 @@
             }
             
             const total = cart.reduce((a, b) => a + (b.preco * b.qty), 0);
-            const subtotal = total; // Pode adicionar lógica de desconto aqui
-            
-            document.getElementById('subtotalCarrinho').innerText = subtotal.toFixed(2) + " MT";
+            document.getElementById('subtotalCarrinho').innerText = total.toFixed(2) + " MT";
             document.getElementById('totalCarrinho').innerText = total.toFixed(2) + " MT";
         }
 
@@ -999,30 +1080,29 @@
                 const lucroTotal = cart.reduce((a, b) => a + ((b.lucroUnitario || (b.preco * 0.3)) * b.qty), 0);
                 const hoje = new Date().toISOString().split('T')[0];
 
-                // 1. Gravar Venda
-                await db.ref(`users/${userState.uid}/sales`).push({
+                // Gravar Venda
+                await db.ref(`accounts/${currentUser.uid}/sales`).push({
                     items: cart.map(i => ({ id: i.id, nome: i.nome, qty: i.qty, preco: i.preco })),
                     total: total,
                     lucro: lucroTotal,
                     data: hoje,
-                    timestamp: firebase.database.ServerValue.TIMESTAMP,
-                    paymentMethod: 'cash'
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
                 });
 
-                // 2. Abater Estoque e Incrementar Contador
+                // Abater Estoque e Incrementar Contador
                 const updates = {};
                 for(let item of cart) {
-                    updates[`users/${userState.uid}/products/${item.id}/qtd`] = firebase.database.ServerValue.increment(-item.qty);
+                    updates[`accounts/${currentUser.uid}/products/${item.id}/qtd`] = firebase.database.ServerValue.increment(-item.qty);
                 }
-                updates[`users/${userState.uid}/profile/vendasContador`] = firebase.database.ServerValue.increment(1);
+                updates[`accounts/${currentUser.uid}/vendasContador`] = firebase.database.ServerValue.increment(1);
                 
                 await db.ref().update(updates);
 
-                showToast(`Venda finalizada! Total: ${total.toFixed(2)} MT`, 'success');
+                showToast(`Venda: ${total.toFixed(2)} MT`, 'success');
                 cart = [];
                 atualizarCarrinhoUI();
             } catch (err) {
-                showToast('Erro ao finalizar venda: ' + err.message, 'error');
+                showToast('Erro: ' + err.message, 'error');
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-check-circle mr-2"></i>Finalizar';
@@ -1030,17 +1110,13 @@
         }
 
         // ==========================================
-        // ADMIN CONSOLE FUNCTIONS
+        // ADMIN CONSOLE
         // ==========================================
         function adminNav(section) {
-            // Hide all sections
             document.querySelectorAll('#adminConsole section').forEach(s => s.classList.add('hidden'));
             document.getElementById(`admin-${section}`).classList.remove('hidden');
             
-            // Update nav styles
-            document.querySelectorAll('.admin-nav-item').forEach(btn => {
-                btn.classList.remove('bg-white/10');
-            });
+            document.querySelectorAll('.admin-nav-item').forEach(btn => btn.classList.remove('bg-white/10'));
             event.target.closest('button').classList.add('bg-white/10');
             
             if (section === 'users') refreshUsers();
@@ -1048,47 +1124,70 @@
         }
 
         async function loadAdminData() {
-            // Load stats
-            const usersSnap = await db.ref('users').once('value');
-            const users = usersSnap.val() || {};
-            const userList = Object.keys(users);
+            const [accountsSnap, licensesSnap] = await Promise.all([
+                db.ref('accounts').once('value'),
+                db.ref('system/licenses').once('value')
+            ]);
+
+            const accounts = accountsSnap.val() || {};
+            const licenses = licensesSnap.val() || {};
             
+            const accountList = Object.entries(accounts);
             let proCount = 0;
             let totalSales = 0;
-            
-            userList.forEach(uid => {
-                const profile = users[uid].profile || {};
-                if (profile.activacaoPro && profile.activacaoPro !== 'OFF') proCount++;
+            let todaySales = 0;
+            const hoje = new Date().toISOString().split('T')[0];
+
+            accountList.forEach(([uid, data]) => {
+                if (data.activacaoPro && data.activacaoPro !== 'OFF') proCount++;
                 
-                const sales = users[uid].sales || {};
+                const sales = data.sales || {};
                 Object.values(sales).forEach(s => {
-                    if (s.data === new Date().toISOString().split('T')[0]) {
-                        totalSales += s.total || 0;
-                    }
+                    totalSales += s.total || 0;
+                    if (s.data === hoje) todaySales += s.total || 0;
                 });
             });
-            
-            document.getElementById('adminTotalUsers').innerText = userList.length;
+
+            const usedLicenses = Object.values(licenses).filter(l => l.used).length;
+
+            document.getElementById('adminTotalUsers').innerText = accountList.length;
             document.getElementById('adminProLicenses').innerText = proCount;
-            document.getElementById('adminTotalSales').innerText = totalSales.toFixed(0);
-            document.getElementById('adminRevenue').innerText = (proCount * 500) + " MT"; // Estimativa
+            document.getElementById('adminTotalSales').innerText = todaySales.toFixed(0);
+            document.getElementById('adminRevenue').innerText = (usedLicenses * systemSettings.proPrice) + " MT";
+
+            // Activity
+            const recentActivity = accountList
+                .sort((a,b) => (b[1].lastAccess || 0) - (a[1].lastAccess || 0))
+                .slice(0, 5)
+                .map(([uid, data]) => `
+                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
+                        <div>
+                            <p class="font-bold text-sm">${data.empresa}</p>
+                            <p class="text-xs text-gray-500">PIN: ${data.pin}</p>
+                        </div>
+                        <span class="text-xs ${data.activacaoPro !== 'OFF' ? 'text-amber-600 font-bold' : 'text-gray-400'}">
+                            ${data.activacaoPro !== 'OFF' ? 'PRO' : 'Free'}
+                        </span>
+                    </div>
+                `).join('');
+            
+            document.getElementById('adminRecentActivity').innerHTML = recentActivity || '<p class="text-gray-400 text-center">Sem actividade</p>';
         }
 
         async function refreshUsers() {
-            const snap = await db.ref('users').once('value');
-            const users = snap.val() || {};
+            const snap = await db.ref('accounts').once('value');
+            const accounts = snap.val() || {};
             
             let html = '';
-            Object.entries(users).forEach(([uid, data]) => {
-                const p = data.profile || {};
+            Object.entries(accounts).forEach(([uid, data]) => {
                 const sales = data.sales || {};
                 const saleCount = Object.keys(sales).length;
-                const isPro = p.activacaoPro && p.activacaoPro !== 'OFF';
+                const isPro = data.activacaoPro && data.activacaoPro !== 'OFF';
                 
                 html += `
-                    <tr class="table-row border-b">
-                        <td class="py-3 font-medium">${p.nomeEmpresa || 'N/A'}</td>
-                        <td class="py-3 text-gray-600">${p.email || 'N/A'}</td>
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="py-3 font-medium">${data.empresa || 'N/A'}</td>
+                        <td class="py-3 font-mono text-gray-600">${data.pin || 'N/A'}</td>
                         <td class="py-3">
                             <span class="px-2 py-1 rounded-full text-xs font-bold ${isPro ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-600'}">
                                 ${isPro ? 'PRO' : 'FREE'}
@@ -1096,17 +1195,14 @@
                         </td>
                         <td class="py-3">${saleCount}</td>
                         <td class="py-3">
-                            <span class="text-green-600 text-xs"><i class="fas fa-circle text-[8px] mr-1"></i>Activo</span>
-                        </td>
-                        <td class="py-3">
-                            <button onclick="viewUser('${uid}')" class="text-violet-600 hover:text-violet-800 mr-2"><i class="fas fa-eye"></i></button>
-                            <button onclick="deleteUser('${uid}')" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button>
+                            <button onclick="viewAccount('${uid}')" class="text-violet-600 hover:text-violet-800 mr-2"><i class="fas fa-eye"></i></button>
+                            <button onclick="deleteAccount('${uid}')" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button>
                         </td>
                     </tr>
                 `;
             });
             
-            document.getElementById('adminUsersTable').innerHTML = html || '<tr><td colspan="6" class="py-8 text-center text-gray-400">Nenhum utilizador</td></tr>';
+            document.getElementById('adminUsersTable').innerHTML = html || '<tr><td colspan="5" class="py-8 text-center text-gray-400">Nenhuma conta</td></tr>';
         }
 
         function generateLicenseCode() {
@@ -1128,7 +1224,7 @@
         function copyLicenseCode() {
             const code = document.getElementById('newLicenseCode').innerText;
             navigator.clipboard.writeText(code);
-            showToast('Código copiado!', 'success');
+            showToast('Copiado!', 'success');
         }
 
         async function loadLicenses() {
@@ -1153,42 +1249,36 @@
             document.getElementById('activeLicensesList').innerHTML = html || '<p class="text-gray-400 text-center py-4">Nenhum código</p>';
         }
 
-        function viewUser(uid) {
-            alert('Ver detalhes do utilizador: ' + uid);
+        function viewAccount(uid) {
+            alert('UID: ' + uid);
         }
 
-        function deleteUser(uid) {
-            if (confirm('Tem certeza que deseja remover este utilizador? Todos os dados serão perdidos!')) {
-                db.ref(`users/${uid}`).remove();
+        function deleteAccount(uid) {
+            if (confirm('Remover esta conta permanentemente?')) {
+                db.ref(`accounts/${uid}`).remove();
+                db.ref(`system/accountsIndex/${uid}`).remove();
+                // Remover PIN associado
+                db.ref('system/pins').orderByValue().equalTo(uid).once('value', snap => {
+                    snap.forEach(child => child.ref.remove());
+                });
                 refreshUsers();
-                showToast('Utilizador removido', 'success');
-            }
-        }
-
-        function toggleMaintenance() {
-            const btn = document.getElementById('maintenanceToggle');
-            const isOn = btn.classList.contains('bg-green-500');
-            
-            if (isOn) {
-                btn.classList.remove('bg-green-500');
-                btn.classList.add('bg-gray-300');
-                btn.querySelector('span').style.transform = 'translateX(0)';
-            } else {
-                btn.classList.remove('bg-gray-300');
-                btn.classList.add('bg-green-500');
-                btn.querySelector('span').style.transform = 'translateX(24px)';
+                showToast('Conta removida', 'success');
             }
         }
 
         function saveSettings() {
-            const limit = document.getElementById('trialLimit').value;
-            db.ref('system/settings').update({ trialLimit: parseInt(limit) });
+            const trialLimit = parseInt(document.getElementById('trialLimit').value);
+            const proPrice = parseInt(document.getElementById('proPrice').value);
+            
+            db.ref('system/settings').update({
+                trialLimit: trialLimit,
+                proPrice: proPrice
+            });
+            
+            systemSettings.trialLimit = trialLimit;
+            systemSettings.proPrice = proPrice;
+            
             showToast('Configurações guardadas!', 'success');
-        }
-
-        function toggleAdminMobileMenu() {
-            // Implementar menu mobile para admin
-            alert('Menu mobile admin');
         }
 
         // ==========================================
@@ -1221,7 +1311,7 @@
             icon.classList.add('fa-spin');
             setTimeout(() => {
                 icon.classList.remove('fa-spin');
-                showToast('Dados sincronizados!', 'success');
+                showToast('Sincronizado!', 'success');
             }, 1000);
         }
 
@@ -1247,18 +1337,13 @@
             }, 3000);
         }
 
-        // Fechar modal ao clicar fora
+        // Event listeners
         document.getElementById('modalProd').addEventListener('click', (e) => {
             if (e.target === e.currentTarget) fecharModal();
         });
 
-        // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') fecharModal();
-            if (e.ctrlKey && e.key === 'f') {
-                e.preventDefault();
-                document.getElementById('busca')?.focus();
-            }
         });
     </script>
 </body>
