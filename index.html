@@ -22,8 +22,6 @@
         .animate-fade { animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .product-card:active { transform: scale(0.95); }
-        .pin-input { width: 50px; height: 60px; text-align: center; font-size: 24px; font-weight: bold; border: 2px solid #e5e7eb; border-radius: 12px; margin: 0 5px; }
-        .pin-input:focus { border-color: #7c3aed; outline: none; }
         
         /* ESTILOS DO RECIBO POS */
         .receipt-paper {
@@ -45,9 +43,7 @@
         }
         .receipt-line { border-top: 1px dashed #000; margin: 5px 0; }
         .receipt-center { text-align: center; }
-        .receipt-right { text-align: right; }
         .receipt-bold { font-weight: bold; }
-        .receipt-qrcode { text-align: center; margin: 10px 0; }
     </style>
 </head>
 <body class="pb-24">
@@ -67,7 +63,7 @@
                 </div>
 
                 <div class="space-y-3">
-                    <button onclick="showPinLogin()" class="w-full btn-primary py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transition">
+                    <button onclick="showLogin()" class="w-full btn-primary py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transition">
                         <i class="fas fa-user mr-2"></i>Acessar Minha Conta
                     </button>
                     <button onclick="showNewAccount()" class="w-full bg-gray-100 text-gray-700 py-4 rounded-xl font-bold hover:bg-gray-200 transition">
@@ -76,24 +72,31 @@
                 </div>
             </div>
 
-            <!-- Login com PIN -->
-            <div id="pinLoginForm" class="hidden">
+            <!-- LOGIN COM EMAIL + SENHA (SEM FIREBASE AUTH) -->
+            <div id="loginForm" class="hidden">
                 <button onclick="backToMode()" class="mb-4 text-gray-400 hover:text-gray-600">
                     <i class="fas fa-arrow-left mr-2"></i>Voltar
                 </button>
-                <h2 class="text-xl font-bold text-center mb-2">Digite seu PIN</h2>
-                <p class="text-sm text-gray-500 text-center mb-6">Acesso à sua loja</p>
+                <h2 class="text-xl font-bold text-center mb-2">Acesse sua Conta</h2>
+                <p class="text-sm text-gray-500 text-center mb-6">Email e senha cadastrados</p>
                 
-                <div class="flex justify-center mb-6">
-                    <input type="password" id="pin1" class="pin-input" maxlength="1" onkeyup="movePin(1, event)">
-                    <input type="password" id="pin2" class="pin-input" maxlength="1" onkeyup="movePin(2, event)">
-                    <input type="password" id="pin3" class="pin-input" maxlength="1" onkeyup="movePin(3, event)">
-                    <input type="password" id="pin4" class="pin-input" maxlength="1" onkeyup="movePin(4, event)">
+                <div class="space-y-3">
+                    <div>
+                        <label class="text-xs font-bold text-gray-500 uppercase ml-1">E-mail</label>
+                        <input type="email" id="loginEmail" placeholder="seu@email.com" class="w-full p-4 bg-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-violet-500">
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-gray-500 uppercase ml-1">Senha</label>
+                        <input type="password" id="loginSenha" placeholder="Sua senha" class="w-full p-4 bg-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-violet-500">
+                    </div>
+                    <button onclick="loginWithEmail()" class="w-full btn-primary py-4 rounded-xl font-bold shadow-lg">
+                        <i class="fas fa-unlock mr-2"></i>Entrar
+                    </button>
                 </div>
                 
-                <button onclick="loginWithPin()" class="w-full btn-primary py-4 rounded-xl font-bold shadow-lg">
-                    <i class="fas fa-unlock mr-2"></i>Entrar
-                </button>
+                <p class="text-center mt-4 text-sm text-gray-500">
+                    <button onclick="recuperarSenha()" class="text-violet-600 font-bold">Esqueceu a senha?</button>
+                </p>
             </div>
 
             <!-- Nova Conta -->
@@ -113,6 +116,10 @@
                         <input type="email" id="newEmail" placeholder="seu@email.com" class="w-full p-3 bg-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-violet-500">
                     </div>
                     <div>
+                        <label class="text-xs font-bold text-gray-500 uppercase ml-1">Senha * (mín 6 chars)</label>
+                        <input type="password" id="newSenha" placeholder="Crie uma senha" class="w-full p-3 bg-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-violet-500">
+                    </div>
+                    <div>
                         <label class="text-xs font-bold text-gray-500 uppercase ml-1">Nome da Empresa *</label>
                         <input type="text" id="newEmpresa" placeholder="Nome da loja" class="w-full p-3 bg-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-violet-500">
                     </div>
@@ -127,10 +134,6 @@
                     <div>
                         <label class="text-xs font-bold text-gray-500 uppercase ml-1">Endereço</label>
                         <input type="text" id="newEndereco" placeholder="Maputo, Av. 25 de Setembro..." class="w-full p-3 bg-gray-100 rounded-xl outline-none">
-                    </div>
-                    <div>
-                        <label class="text-xs font-bold text-gray-500 uppercase ml-1">Criar PIN (4 dígitos) *</label>
-                        <input type="number" id="newPin" placeholder="1234" maxlength="4" class="w-full p-3 bg-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-violet-500">
                     </div>
                     <button onclick="createAccount()" class="w-full btn-success py-4 rounded-xl font-bold shadow-lg mt-2">
                         <i class="fas fa-check mr-2"></i>Criar Conta
@@ -394,27 +397,26 @@
         // VARIÁVEIS GLOBAIS
         // ==========================================
         let currentUser = null;
-        let currentPin = null;
+        let currentUserId = null; // UID único do usuário
         let localProducts = [];
         let cart = [];
         let currentFilter = 'all';
         let reportPeriod = 'today';
-        let lastSaleData = null; // Guardar dados da última venda para recibo
+        let lastSaleData = null;
 
         // ==========================================
         // NAVEGAÇÃO ENTRE TELAS
         // ==========================================
         function backToMode() {
             document.getElementById('modeSelect').classList.remove('hidden');
-            document.getElementById('pinLoginForm').classList.add('hidden');
+            document.getElementById('loginForm').classList.add('hidden');
             document.getElementById('newAccountForm').classList.add('hidden');
-            clearPinInputs();
         }
 
-        function showPinLogin() {
+        function showLogin() {
             document.getElementById('modeSelect').classList.add('hidden');
-            document.getElementById('pinLoginForm').classList.remove('hidden');
-            setTimeout(() => document.getElementById('pin1').focus(), 100);
+            document.getElementById('loginForm').classList.remove('hidden');
+            setTimeout(() => document.getElementById('loginEmail').focus(), 100);
         }
 
         function showNewAccount() {
@@ -422,49 +424,73 @@
             document.getElementById('newAccountForm').classList.remove('hidden');
         }
 
-        function clearPinInputs() {
-            for(let i=1; i<=4; i++) {
-                document.getElementById(`pin${i}`).value = '';
-            }
-        }
-
-        function movePin(pos, event) {
-            if (event.key >= '0' && event.key <= '9') {
-                const next = document.getElementById(`pin${pos + 1}`);
-                if (next) next.focus();
-            } else if (event.key === 'Backspace') {
-                const prev = document.getElementById(`pin${pos - 1}`);
-                if (prev) prev.focus();
-            }
-        }
-
         // ==========================================
-        // CRIAÇÃO DE CONTA
+        // CRIAÇÃO DE CONTA - COM EMAIL ÚNICO
         // ==========================================
+        /*
+        ESTRUTURA NO FIREBASE:
+        contas/
+          └── {userId}/
+              ├── Nome: "João Silva"
+              ├── E-mail: "joao@email.com" (único, usado para login)
+              ├── Senha: "hash_da_senha" (simples, não é Firebase Auth)
+              ├── Nome da empresa: "Loja do João"
+              ├── Nuit: "123456789"
+              ├── Contacto: "841234567"
+              ├── Endereço: "Maputo..."
+              ├── activação Pro: "OFF"
+              ├── Prazo: "2026-12-31"
+              ├── vendasContador: 0
+              ├── products/
+              └── sales/
+        
+        emailIndex/
+          └── {email} (email codificado): {userId}
+        */
         async function createAccount() {
             const nome = document.getElementById('newNome').value.trim();
-            const email = document.getElementById('newEmail').value.trim();
+            const email = document.getElementById('newEmail').value.trim().toLowerCase();
+            const senha = document.getElementById('newSenha').value;
             const empresa = document.getElementById('newEmpresa').value.trim();
             const nuit = document.getElementById('newNuit').value.trim();
             const contacto = document.getElementById('newContacto').value.trim();
             const endereco = document.getElementById('newEndereco').value.trim();
-            const pin = document.getElementById('newPin').value.trim();
 
-            if (!nome || !email || !empresa || !pin || pin.length !== 4) {
+            if (!nome || !email || !senha || !empresa) {
                 showToast('Preencha todos os campos obrigatórios (*)', 'error');
                 return;
             }
 
+            if (senha.length < 6) {
+                showToast('A senha deve ter pelo menos 6 caracteres', 'error');
+                return;
+            }
+
+            // Validar email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showToast('Digite um e-mail válido', 'error');
+                return;
+            }
+
             try {
-                const pinSnap = await db.ref(`contas/${pin}`).once('value');
-                if (pinSnap.exists()) {
-                    showToast('Este PIN já está em uso. Escolha outro.', 'error');
+                // Verificar se email já existe (usando índice)
+                const emailKey = email.replace(/\./g, ','); // Firebase não aceita pontos em keys
+                const emailSnap = await db.ref(`emailIndex/${emailKey}`).once('value');
+                
+                if (emailSnap.exists()) {
+                    showToast('Este e-mail já está cadastrado. Use outro ou faça login.', 'error');
                     return;
                 }
 
+                // Criar ID único para o usuário
+                const userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+
+                // Criar estrutura da conta
                 const accountData = {
                     "Nome": nome,
                     "E-mail": email,
+                    "Senha": senha, // Em produção, use hash!
                     "Nome da empresa": empresa,
                     "Nuit": nuit || "",
                     "Contacto": contacto || "",
@@ -476,20 +502,26 @@
                     "lastAccess": firebase.database.ServerValue.TIMESTAMP
                 };
 
-                await db.ref(`contas/${pin}`).set(accountData);
-                await db.ref(`contas/${pin}/products`).set({});
-                await db.ref(`contas/${pin}/sales`).set({});
+                // Salvar conta
+                await db.ref(`contas/${userId}`).set(accountData);
+                
+                // Criar índice de email
+                await db.ref(`emailIndex/${emailKey}`).set(userId);
+                
+                // Criar nós filhos
+                await db.ref(`contas/${userId}/products`).set({});
+                await db.ref(`contas/${userId}/sales`).set({});
 
                 showToast('Conta criada com sucesso!', 'success');
                 
                 // Limpar formulário
                 document.getElementById('newNome').value = '';
                 document.getElementById('newEmail').value = '';
+                document.getElementById('newSenha').value = '';
                 document.getElementById('newEmpresa').value = '';
                 document.getElementById('newNuit').value = '';
                 document.getElementById('newContacto').value = '';
                 document.getElementById('newEndereco').value = '';
-                document.getElementById('newPin').value = '';
 
                 backToMode();
             } catch (err) {
@@ -499,46 +531,74 @@
         }
 
         // ==========================================
-        // LOGIN COM PIN
+        // LOGIN COM EMAIL + SENHA (VERIFICAÇÃO DUPLO)
         // ==========================================
-        async function loginWithPin() {
-            const pin = [
-                document.getElementById('pin1').value,
-                document.getElementById('pin2').value,
-                document.getElementById('pin3').value,
-                document.getElementById('pin4').value
-            ].join('');
+        async function loginWithEmail() {
+            const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+            const senha = document.getElementById('loginSenha').value;
 
-            if (pin.length !== 4) {
-                showToast('Digite os 4 dígitos do PIN', 'error');
+            if (!email || !senha) {
+                showToast('Digite e-mail e senha', 'error');
                 return;
             }
 
             try {
-                const accountSnap = await db.ref(`contas/${pin}`).once('value');
+                // Buscar userId pelo email (índice)
+                const emailKey = email.replace(/\./g, ',');
+                const indexSnap = await db.ref(`emailIndex/${emailKey}`).once('value');
                 
-                if (!accountSnap.exists()) {
-                    showToast('PIN não encontrado', 'error');
-                    clearPinInputs();
-                    document.getElementById('pin1').focus();
+                if (!indexSnap.exists()) {
+                    showToast('E-mail não encontrado', 'error');
                     return;
                 }
 
+                const userId = indexSnap.val();
+                
+                // Buscar dados da conta
+                const accountSnap = await db.ref(`contas/${userId}`).once('value');
                 const accountData = accountSnap.val();
-                currentPin = pin;
+
+                if (!accountData) {
+                    showToast('Erro: conta não encontrada', 'error');
+                    return;
+                }
+
+                // Verificar senha
+                if (accountData.Senha !== senha) {
+                    showToast('Senha incorreta', 'error');
+                    document.getElementById('loginSenha').value = '';
+                    return;
+                }
+
+                // Login bem-sucedido
+                currentUserId = userId;
                 currentUser = accountData;
 
-                await db.ref(`contas/${pin}/lastAccess`).set(firebase.database.ServerValue.TIMESTAMP);
+                // Atualizar último acesso
+                await db.ref(`contas/${userId}/lastAccess`).set(firebase.database.ServerValue.TIMESTAMP);
 
                 showToast(`Bem-vindo, ${accountData["Nome da empresa"]}!`, 'success');
                 
-                clearPinInputs();
+                // Limpar campos
+                document.getElementById('loginEmail').value = '';
+                document.getElementById('loginSenha').value = '';
+
                 showMainApp();
                 syncData();
             } catch (err) {
                 showToast('Erro ao entrar: ' + err.message, 'error');
                 console.error(err);
             }
+        }
+
+        function recuperarSenha() {
+            const email = document.getElementById('loginEmail').value.trim();
+            if (!email) {
+                showToast('Digite seu e-mail primeiro', 'error');
+                return;
+            }
+            // Em produção: enviar email de recuperação
+            showToast('Entre em contato com o administrador para recuperar senha', 'info');
         }
 
         function showMainApp() {
@@ -548,10 +608,9 @@
 
         function logout() {
             currentUser = null;
-            currentPin = null;
+            currentUserId = null;
             cart = [];
             
-            clearPinInputs();
             atualizarCarrinhoUI();
             
             document.getElementById('mainApp').classList.add('hidden');
@@ -565,9 +624,9 @@
         // SINCRONIZAÇÃO DE DADOS
         // ==========================================
         function syncData() {
-            if (!currentPin) return;
+            if (!currentUserId) return;
 
-            db.ref(`contas/${currentPin}`).on('value', snap => {
+            db.ref(`contas/${currentUserId}`).on('value', snap => {
                 const p = snap.val();
                 if (!p) return;
                 
@@ -591,7 +650,7 @@
                 }
             });
 
-            db.ref(`contas/${currentPin}/products`).on('value', snap => {
+            db.ref(`contas/${currentUserId}/products`).on('value', snap => {
                 localProducts = [];
                 snap.forEach(c => { 
                     if (c.key !== 'products') { 
@@ -607,7 +666,7 @@
         }
 
         function loadReports() {
-            db.ref(`contas/${currentPin}/sales`).on('value', snap => {
+            db.ref(`contas/${currentUserId}/sales`).on('value', snap => {
                 updateReports(snap);
             });
         }
@@ -692,8 +751,8 @@
             const newDate = new Date();
             newDate.setDate(newDate.getDate() + duration);
             
-            await db.ref(`contas/${currentPin}/activação Pro`).set(code);
-            await db.ref(`contas/${currentPin}/Prazo`).set(newDate.toISOString().split('T')[0]);
+            await db.ref(`contas/${currentUserId}/activação Pro`).set(code);
+            await db.ref(`contas/${currentUserId}/Prazo`).set(newDate.toISOString().split('T')[0]);
             
             showToast('Moz Caixa PRO activado!', 'success');
             document.getElementById('lockScreen').classList.add('hidden');
@@ -721,7 +780,7 @@
                 createdAt: firebase.database.ServerValue.TIMESTAMP
             };
 
-            db.ref(`contas/${currentPin}/products`).push(productData);
+            db.ref(`contas/${currentUserId}/products`).push(productData);
             
             fecharModal();
             showToast('Produto adicionado!', 'success');
@@ -779,7 +838,7 @@
 
         function deleteProduct(id) {
             if (confirm('Remover este produto?')) {
-                db.ref(`contas/${currentPin}/products/${id}`).remove();
+                db.ref(`contas/${currentUserId}/products/${id}`).remove();
                 showToast('Produto removido', 'success');
             }
         }
@@ -903,7 +962,6 @@
                 const hoje = new Date().toISOString().split('T')[0];
                 const agora = new Date();
 
-                // Dados da venda
                 const saleData = {
                     items: cart.map(i => ({ 
                         id: i.id, 
@@ -920,18 +978,15 @@
                     vendedor: currentUser["Nome"] || 'Atendente'
                 };
 
-                // Gravar no Firebase
-                const saleRef = await db.ref(`contas/${currentPin}/sales`).push(saleData);
+                const saleRef = await db.ref(`contas/${currentUserId}/sales`).push(saleData);
 
-                // Atualizar stock e contador
                 const updates = {};
                 for(let item of cart) {
-                    updates[`contas/${currentPin}/products/${item.id}/qtd`] = firebase.database.ServerValue.increment(-item.qty);
+                    updates[`contas/${currentUserId}/products/${item.id}/qtd`] = firebase.database.ServerValue.increment(-item.qty);
                 }
-                updates[`contas/${currentPin}/vendasContador`] = firebase.database.ServerValue.increment(1);
+                updates[`contas/${currentUserId}/vendasContador`] = firebase.database.ServerValue.increment(1);
                 await db.ref().update(updates);
 
-                // Guardar dados para recibo
                 lastSaleData = {
                     ...saleData,
                     id: saleRef.key,
@@ -943,11 +998,9 @@
 
                 showToast(`Venda: ${total.toFixed(2)} MT`, 'success');
                 
-                // Limpar carrinho
                 cart = [];
                 atualizarCarrinhoUI();
                 
-                // Mostrar recibo automaticamente
                 setTimeout(() => {
                     mostrarRecibo();
                 }, 500);
@@ -962,7 +1015,7 @@
         }
 
         // ==========================================
-        // RECIBO POS - IMPRESSÃO
+        // RECIBO POS
         // ==========================================
         function mostrarRecibo() {
             if (!lastSaleData) return;
@@ -971,10 +1024,7 @@
             const data = lastSaleData;
             const dataObj = new Date();
             
-            // Gerar número de recibo único
             const reciboNum = data.id.substring(0, 8).toUpperCase();
-            
-            // Calcular IVA (16% em Moçambique)
             const subtotal = data.total / 1.16;
             const iva = data.total - subtotal;
 
@@ -1065,7 +1115,6 @@
         }
 
         function partilharRecibo() {
-            // Criar texto para partilha
             const data = lastSaleData;
             let texto = `*${data.empresa}*\n`;
             texto += `Recibo Nº: ${data.id.substring(0, 8).toUpperCase()}\n`;
@@ -1077,14 +1126,9 @@
             texto += `\n*TOTAL: ${data.total.toFixed(2)} MT*\n`;
             texto += `\nObrigado pela preferência!`;
             
-            // Partilhar via WhatsApp ou copiar
             if (navigator.share) {
-                navigator.share({
-                    title: `Recibo ${data.empresa}`,
-                    text: texto
-                });
+                navigator.share({ title: `Recibo ${data.empresa}`, text: texto });
             } else {
-                // Copiar para clipboard
                 navigator.clipboard.writeText(texto).then(() => {
                     showToast('Recibo copiado! Cole no WhatsApp', 'success');
                 });
