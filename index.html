@@ -18,23 +18,17 @@
         .card { background: white; border-radius: 15px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .btn-primary { background: linear-gradient(135deg, #7c3aed, #6d28d9); color: white; }
         .btn-success { background: linear-gradient(135deg, #10b981, #059669); color: white; }
-        .btn-danger { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; }
         .glass { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); }
         .animate-fade { animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .product-card:active { transform: scale(0.95); }
-        .cart-item { transition: all 0.2s; }
         .pin-input { width: 50px; height: 60px; text-align: center; font-size: 24px; font-weight: bold; border: 2px solid #e5e7eb; border-radius: 12px; margin: 0 5px; }
         .pin-input:focus { border-color: #7c3aed; outline: none; }
-        /* Admin Console Styles */
-        .admin-nav { background: #1e293b; color: white; }
-        .admin-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-        .stat-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px; padding: 20px; }
     </style>
 </head>
 <body class="pb-24">
 
-    <!-- TELA DE ACESSO (PIN ou Admin) -->
+    <!-- TELA DE ACESSO -->
     <div id="accessScreen" class="fixed inset-0 bg-gradient-to-br from-violet-700 to-purple-900 z-[100] flex items-center justify-center p-6">
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl animate-fade">
             
@@ -55,9 +49,6 @@
                     <button onclick="showNewAccount()" class="w-full bg-gray-100 text-gray-700 py-4 rounded-xl font-bold hover:bg-gray-200 transition">
                         <i class="fas fa-plus-circle mr-2"></i>Nova Conta
                     </button>
-                    <button onclick="showAdminLogin()" class="w-full bg-slate-800 text-white py-4 rounded-xl font-bold hover:bg-slate-900 transition">
-                        <i class="fas fa-crown mr-2"></i>Admin Console
-                    </button>
                 </div>
             </div>
 
@@ -67,7 +58,7 @@
                     <i class="fas fa-arrow-left mr-2"></i>Voltar
                 </button>
                 <h2 class="text-xl font-bold text-center mb-2">Digite seu PIN</h2>
-                <p class="text-sm text-gray-500 text-center mb-6">Acesso rápido à sua loja</p>
+                <p class="text-sm text-gray-500 text-center mb-6">Acesso à sua loja</p>
                 
                 <div class="flex justify-center mb-6">
                     <input type="password" id="pin1" class="pin-input" maxlength="1" onkeyup="movePin(1, event)">
@@ -79,10 +70,6 @@
                 <button onclick="loginWithPin()" class="w-full btn-primary py-4 rounded-xl font-bold shadow-lg">
                     <i class="fas fa-unlock mr-2"></i>Entrar
                 </button>
-                
-                <p class="text-center mt-4 text-sm text-gray-500">
-                    Esqueceu o PIN? Use o email cadastrado
-                </p>
             </div>
 
             <!-- Nova Conta -->
@@ -90,30 +77,41 @@
                 <button onclick="backToMode()" class="mb-4 text-gray-400 hover:text-gray-600">
                     <i class="fas fa-arrow-left mr-2"></i>Voltar
                 </button>
-                <h2 class="text-xl font-bold mb-4">Criar Nova Conta</h2>
+                <h2 class="text-xl font-bold mb-4 text-center">Criar Nova Conta</h2>
                 
-                <div class="space-y-3">
-                    <input type="text" id="newEmpresa" placeholder="Nome da Empresa" class="w-full p-4 bg-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-violet-500">
-                    <input type="text" id="newNuit" placeholder="NUIT (opcional)" class="w-full p-4 bg-gray-100 rounded-xl outline-none">
-                    <input type="text" id="newPin" placeholder="Criar PIN (4 dígitos)" maxlength="4" class="w-full p-4 bg-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-violet-500">
-                    <button onclick="createAccount()" class="w-full btn-success py-4 rounded-xl font-bold shadow-lg">
+                <div class="space-y-3 max-h-96 overflow-y-auto pr-1">
+                    <div>
+                        <label class="text-xs font-bold text-gray-500 uppercase ml-1">Nome Completo *</label>
+                        <input type="text" id="newNome" placeholder="Seu nome" class="w-full p-3 bg-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-violet-500">
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-gray-500 uppercase ml-1">E-mail *</label>
+                        <input type="email" id="newEmail" placeholder="seu@email.com" class="w-full p-3 bg-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-violet-500">
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-gray-500 uppercase ml-1">Nome da Empresa *</label>
+                        <input type="text" id="newEmpresa" placeholder="Nome da loja" class="w-full p-3 bg-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-violet-500">
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-gray-500 uppercase ml-1">NUIT</label>
+                        <input type="text" id="newNuit" placeholder="123456789" class="w-full p-3 bg-gray-100 rounded-xl outline-none">
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-gray-500 uppercase ml-1">Contacto</label>
+                        <input type="text" id="newContacto" placeholder="841234567" class="w-full p-3 bg-gray-100 rounded-xl outline-none">
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-gray-500 uppercase ml-1">Endereço</label>
+                        <input type="text" id="newEndereco" placeholder="Maputo, Av. 25 de Setembro..." class="w-full p-3 bg-gray-100 rounded-xl outline-none">
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-gray-500 uppercase ml-1">Criar PIN (4 dígitos) *</label>
+                        <input type="number" id="newPin" placeholder="1234" maxlength="4" class="w-full p-3 bg-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-violet-500">
+                    </div>
+                    <button onclick="createAccount()" class="w-full btn-success py-4 rounded-xl font-bold shadow-lg mt-2">
                         <i class="fas fa-check mr-2"></i>Criar Conta
                     </button>
                 </div>
-            </div>
-
-            <!-- Admin Login -->
-            <div id="adminLoginForm" class="hidden">
-                <button onclick="backToMode()" class="mb-4 text-gray-400 hover:text-gray-600">
-                    <i class="fas fa-arrow-left mr-2"></i>Voltar
-                </button>
-                <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4">
-                    <p class="text-xs text-amber-700 text-center"><i class="fas fa-shield-alt mr-1"></i>Acesso Restrito - Administradores</p>
-                </div>
-                <input type="password" id="adminPin" placeholder="PIN Admin" maxlength="6" class="w-full p-4 bg-gray-100 rounded-xl mb-4 outline-none text-center text-2xl tracking-widest">
-                <button onclick="loginAdmin()" class="w-full bg-slate-800 text-white py-4 rounded-xl font-bold shadow-lg">
-                    <i class="fas fa-lock mr-2"></i>Acessar Consola
-                </button>
             </div>
         </div>
     </div>
@@ -128,7 +126,7 @@
             <button onclick="ativarPro()" class="w-full bg-gradient-to-r from-amber-500 to-orange-600 text-white py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transition">
                 <i class="fas fa-crown mr-2"></i>ATIVAR PRO
             </button>
-            <button onclick="logout()" class="mt-4 text-gray-500 text-sm hover:text-white transition">Sair da Conta</button>
+            <button onclick="logout()" class="mt-4 text-gray-500 text-sm hover:text-white transition">Sair</button>
         </div>
     </div>
 
@@ -223,7 +221,7 @@
                 <h2 class="font-black text-xl mb-4 text-gray-800">Resumo de Vendas</h2>
                 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div class="stat-card">
+                    <div class="bg-gradient-to-br from-violet-600 to-purple-700 text-white rounded-xl p-5 shadow-lg">
                         <p class="text-sm opacity-80 uppercase tracking-wider">Total Vendido</p>
                         <h4 id="relTotal" class="text-3xl font-black mt-1">0.00 MT</h4>
                         <p class="text-xs mt-2 opacity-70" id="relPeriodo">Hoje</p>
@@ -231,12 +229,10 @@
                     <div class="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-xl p-5 shadow-lg">
                         <p class="text-sm opacity-80 uppercase tracking-wider">Lucro Líquido</p>
                         <h4 id="relLucro" class="text-3xl font-black mt-1">0.00 MT</h4>
-                        <p class="text-xs mt-2 opacity-70">Margem estimada</p>
                     </div>
                     <div class="bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-xl p-5 shadow-lg">
                         <p class="text-sm opacity-80 uppercase tracking-wider">Transações</p>
                         <h4 id="relTransacoes" class="text-3xl font-black mt-1">0</h4>
-                        <p class="text-xs mt-2 opacity-70">Vendas realizadas</p>
                     </div>
                 </div>
 
@@ -272,156 +268,6 @@
         </nav>
     </div>
 
-    <!-- ADMIN CONSOLE -->
-    <div id="adminConsole" class="hidden min-h-screen bg-gray-100">
-        <aside class="fixed left-0 top-0 bottom-0 w-64 admin-nav z-50 hidden md:flex flex-col">
-            <div class="p-6 border-b border-gray-700">
-                <h1 class="text-xl font-black"><i class="fas fa-crown text-amber-400 mr-2"></i>Admin</h1>
-                <p class="text-xs text-gray-400 mt-1">Moz Caixa Console</p>
-            </div>
-            <nav class="flex-1 p-4 space-y-2">
-                <button onclick="adminNav('dashboard')" class="admin-nav-item w-full text-left p-3 rounded-xl hover:bg-white/10 transition flex items-center gap-3 bg-white/10">
-                    <i class="fas fa-tachometer-alt"></i>Dashboard
-                </button>
-                <button onclick="adminNav('users')" class="admin-nav-item w-full text-left p-3 rounded-xl hover:bg-white/10 transition flex items-center gap-3">
-                    <i class="fas fa-users"></i>Contas
-                </button>
-                <button onclick="adminNav('licenses')" class="admin-nav-item w-full text-left p-3 rounded-xl hover:bg-white/10 transition flex items-center gap-3">
-                    <i class="fas fa-key"></i>Licenças PRO
-                </button>
-                <button onclick="adminNav('settings')" class="admin-nav-item w-full text-left p-3 rounded-xl hover:bg-white/10 transition flex items-center gap-3">
-                    <i class="fas fa-cog"></i>Configurações
-                </button>
-            </nav>
-            <div class="p-4 border-t border-gray-700">
-                <button onclick="logout()" class="w-full p-3 rounded-xl bg-red-500/20 text-red-400 hover:bg-red-500/30 transition flex items-center justify-center gap-2">
-                    <i class="fas fa-sign-out-alt"></i>Sair
-                </button>
-            </div>
-        </aside>
-
-        <main class="md:ml-64 p-6">
-            <!-- Dashboard -->
-            <section id="admin-dashboard" class="animate-fade">
-                <h2 class="text-2xl font-black text-gray-800 mb-6">Dashboard Administrativo</h2>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                    <div class="admin-card border-l-4 border-violet-500">
-                        <p class="text-sm text-gray-500 uppercase">Total Contas</p>
-                        <h3 id="adminTotalUsers" class="text-3xl font-black text-gray-800">0</h3>
-                    </div>
-                    <div class="admin-card border-l-4 border-amber-500">
-                        <p class="text-sm text-gray-500 uppercase">Licenças PRO</p>
-                        <h3 id="adminProLicenses" class="text-3xl font-black text-gray-800">0</h3>
-                    </div>
-                    <div class="admin-card border-l-4 border-blue-500">
-                        <p class="text-sm text-gray-500 uppercase">Vendas Hoje</p>
-                        <h3 id="adminTotalSales" class="text-3xl font-black text-gray-800">0</h3>
-                    </div>
-                    <div class="admin-card border-l-4 border-green-500">
-                        <p class="text-sm text-gray-500 uppercase">Receita PRO</p>
-                        <h3 id="adminRevenue" class="text-3xl font-black text-gray-800">0 MT</h3>
-                    </div>
-                </div>
-
-                <div class="admin-card">
-                    <h3 class="font-bold text-gray-800 mb-4">Actividade Recente</h3>
-                    <div id="adminRecentActivity" class="space-y-3 max-h-96 overflow-y-auto">
-                        <p class="text-gray-400 text-center py-8">Carregando...</p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Users Management -->
-            <section id="admin-users" class="hidden animate-fade">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-black text-gray-800">Gestão de Contas</h2>
-                    <button onclick="refreshUsers()" class="btn-primary px-4 py-2 rounded-lg">
-                        <i class="fas fa-sync-alt mr-2"></i>Actualizar
-                    </button>
-                </div>
-
-                <div class="admin-card overflow-x-auto">
-                    <table class="w-full text-left">
-                        <thead class="border-b">
-                            <tr>
-                                <th class="pb-3 font-bold text-gray-600">Empresa</th>
-                                <th class="pb-3 font-bold text-gray-600">PIN</th>
-                                <th class="pb-3 font-bold text-gray-600">Plano</th>
-                                <th class="pb-3 font-bold text-gray-600">Vendas</th>
-                                <th class="pb-3 font-bold text-gray-600">Acções</th>
-                            </tr>
-                        </thead>
-                        <tbody id="adminUsersTable" class="text-sm">
-                            <tr><td colspan="5" class="py-8 text-center text-gray-400">Carregando...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-            <!-- Licenses -->
-            <section id="admin-licenses" class="hidden animate-fade">
-                <h2 class="text-2xl font-black text-gray-800 mb-6">Gestão de Licenças PRO</h2>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <div class="admin-card">
-                        <h3 class="font-bold text-gray-800 mb-4">Gerar Novo Código</h3>
-                        <div class="space-y-3">
-                            <select id="licenseDuration" class="w-full p-3 border rounded-xl outline-none">
-                                <option value="30">30 Dias</option>
-                                <option value="90">3 Meses</option>
-                                <option value="365">1 Ano</option>
-                                <option value="lifetime">Vitalício</option>
-                            </select>
-                            <button onclick="generateLicenseCode()" class="w-full btn-primary py-3 rounded-xl font-bold">
-                                <i class="fas fa-magic mr-2"></i>Gerar Código
-                            </button>
-                        </div>
-                        <div id="generatedCode" class="mt-4 p-4 bg-green-50 border border-green-200 rounded-xl hidden">
-                            <p class="text-sm text-green-800 font-mono text-center text-lg" id="newLicenseCode"></p>
-                            <button onclick="copyLicenseCode()" class="mt-2 w-full py-2 bg-green-600 text-white rounded-lg text-sm">
-                                <i class="fas fa-copy mr-2"></i>Copiar
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="admin-card">
-                        <h3 class="font-bold text-gray-800 mb-4">Códigos Gerados</h3>
-                        <div id="activeLicensesList" class="space-y-2 max-h-64 overflow-y-auto">
-                            <p class="text-gray-400 text-center py-4">Nenhum código</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Settings -->
-            <section id="admin-settings" class="hidden animate-fade">
-                <h2 class="text-2xl font-black text-gray-800 mb-6">Configurações do Sistema</h2>
-                <div class="admin-card max-w-2xl">
-                    <div class="space-y-4">
-                        <div class="flex justify-between items-center p-4 bg-gray-50 rounded-xl">
-                            <div>
-                                <p class="font-bold text-gray-800">Limite de Teste</p>
-                                <p class="text-sm text-gray-500">Vendas gratuitas antes da activação PRO</p>
-                            </div>
-                            <input type="number" id="trialLimit" value="50" class="w-20 p-2 border rounded-lg text-center font-bold">
-                        </div>
-                        <div class="flex justify-between items-center p-4 bg-gray-50 rounded-xl">
-                            <div>
-                                <p class="font-bold text-gray-800">Preço PRO (Mensal)</p>
-                                <p class="text-sm text-gray-500">Valor em MT</p>
-                            </div>
-                            <input type="number" id="proPrice" value="500" class="w-24 p-2 border rounded-lg text-center font-bold">
-                        </div>
-                        <button onclick="saveSettings()" class="w-full btn-primary py-3 rounded-xl font-bold mt-4">
-                            <i class="fas fa-save mr-2"></i>Guardar Alterações
-                        </button>
-                    </div>
-                </div>
-            </section>
-        </main>
-    </div>
-
     <!-- MODAL PRODUTO -->
     <div id="modalProd" class="fixed inset-0 bg-black/60 z-[120] hidden flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 animate-fade shadow-2xl">
@@ -432,7 +278,7 @@
             <div class="space-y-3">
                 <div>
                     <label class="text-xs font-bold text-gray-500 uppercase ml-1">Nome do Produto</label>
-                    <input type="text" id="pNome" placeholder="Ex: Arroz 5kg" class="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-200 transition">
+                    <input type="text" id="pNome" placeholder="Ex: Arroz 5kg" class="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 outline-none focus:border-violet-500">
                 </div>
                 <div class="flex gap-2">
                     <div class="w-1/2">
@@ -475,7 +321,7 @@
 
     <script>
         // ==========================================
-        // CONFIGURAÇÃO FIREBASE (CASA-DE-JOGOS-ED385)
+        // CONFIGURAÇÃO FIREBASE
         // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyBtEE6FKPFH9Bv2DhZNlb865iVsaX_2kpw",
@@ -489,7 +335,6 @@
         };
 
         firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
         const db = firebase.database();
 
         // ==========================================
@@ -497,51 +342,19 @@
         // ==========================================
         let currentUser = null;
         let currentPin = null;
-        let isAdmin = false;
         let localProducts = [];
         let cart = [];
         let currentFilter = 'all';
         let reportPeriod = 'today';
-        let anonymousUserId = null;
-
-        // Configurações do sistema (do database)
-        let systemSettings = {
-            trialLimit: 50,
-            proPrice: 500,
-            adminPin: '123456' // PIN padrão para admin
-        };
 
         // ==========================================
-        // INICIALIZAÇÃO E AUTH ANÔNIMA
-        // ==========================================
-        
-        // Fazer login anônimo automaticamente para obter UID
-        auth.signInAnonymously().then(cred => {
-            anonymousUserId = cred.user.uid;
-            console.log('Auth anônima OK:', anonymousUserId);
-            loadSystemSettings();
-        }).catch(err => {
-            console.error('Erro auth anônima:', err);
-            showToast('Erro de conexão', 'error');
-        });
-
-        // Carregar configurações do sistema
-        function loadSystemSettings() {
-            db.ref('system/settings').on('value', snap => {
-                if (snap.exists()) {
-                    systemSettings = { ...systemSettings, ...snap.val() };
-                }
-            });
-        }
-
-        // ==========================================
-        // NAVEGAÇÃO ENTRE TELAS DE ACESSO
+        // NAVEGAÇÃO ENTRE TELAS
         // ==========================================
         function backToMode() {
             document.getElementById('modeSelect').classList.remove('hidden');
             document.getElementById('pinLoginForm').classList.add('hidden');
             document.getElementById('newAccountForm').classList.add('hidden');
-            document.getElementById('adminLoginForm').classList.add('hidden');
+            clearPinInputs();
         }
 
         function showPinLogin() {
@@ -555,13 +368,12 @@
             document.getElementById('newAccountForm').classList.remove('hidden');
         }
 
-        function showAdminLogin() {
-            document.getElementById('modeSelect').classList.add('hidden');
-            document.getElementById('adminLoginForm').classList.remove('hidden');
-            setTimeout(() => document.getElementById('adminPin').focus(), 100);
+        function clearPinInputs() {
+            for(let i=1; i<=4; i++) {
+                document.getElementById(`pin${i}`).value = '';
+            }
         }
 
-        // Navegação PIN automática
         function movePin(pos, event) {
             if (event.key >= '0' && event.key <= '9') {
                 const next = document.getElementById(`pin${pos + 1}`);
@@ -573,57 +385,87 @@
         }
 
         // ==========================================
-        // CRIAÇÃO DE CONTA (SEM EMAIL)
+        // CRIAÇÃO DE CONTA - ESTRUTURA FIREBASE
         // ==========================================
+        /*
+        ESTRUTURA NO FIREBASE:
+        contas/
+          └── {pin}/
+              ├── Nome: "João Silva"
+              ├── E-mail: "joao@email.com"
+              ├── Nome da empresa: "Loja do João"
+              ├── Nuit: "123456789"
+              ├── Contacto: "841234567"
+              ├── Endereço: "Maputo..."
+              ├── activação Pro: "OFF" (ou "PRO-XXXX")
+              ├── Prazo: "2026-12-31"
+              ├── vendasContador: 0
+              ├── products/
+              └── sales/
+        */
         async function createAccount() {
+            const nome = document.getElementById('newNome').value.trim();
+            const email = document.getElementById('newEmail').value.trim();
             const empresa = document.getElementById('newEmpresa').value.trim();
             const nuit = document.getElementById('newNuit').value.trim();
+            const contacto = document.getElementById('newContacto').value.trim();
+            const endereco = document.getElementById('newEndereco').value.trim();
             const pin = document.getElementById('newPin').value.trim();
 
-            if (!empresa || !pin || pin.length !== 4) {
-                showToast('Preencha empresa e PIN (4 dígitos)', 'error');
+            if (!nome || !email || !empresa || !pin || pin.length !== 4) {
+                showToast('Preencha todos os campos obrigatórios (*)', 'error');
                 return;
             }
 
             try {
                 // Verificar se PIN já existe
-                const pinSnap = await db.ref(`system/pins/${pin}`).once('value');
+                const pinSnap = await db.ref(`contas/${pin}`).once('value');
                 if (pinSnap.exists()) {
                     showToast('Este PIN já está em uso. Escolha outro.', 'error');
                     return;
                 }
 
-                // Criar conta no database
+                // Criar estrutura exata solicitada
                 const accountData = {
-                    empresa: empresa,
-                    nuit: nuit || '',
-                    pin: pin,
-                    uid: anonymousUserId,
-                    activacaoPro: "OFF",
-                    prazo: new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0],
-                    vendasContador: 0,
-                    createdAt: firebase.database.ServerValue.TIMESTAMP,
-                    lastAccess: firebase.database.ServerValue.TIMESTAMP
+                    "Nome": nome,
+                    "E-mail": email,
+                    "Nome da empresa": empresa,
+                    "Nuit": nuit || "",
+                    "Contacto": contacto || "",
+                    "Endereço": endereco || "",
+                    "activação Pro": "OFF",
+                    "Prazo": new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0],
+                    "vendasContador": 0,
+                    "createdAt": firebase.database.ServerValue.TIMESTAMP,
+                    "lastAccess": firebase.database.ServerValue.TIMESTAMP
                 };
 
-                // Salvar em múltiplos locais para fácil acesso
-                await db.ref(`accounts/${anonymousUserId}`).set(accountData);
-                await db.ref(`system/pins/${pin}`).set({ uid: anonymousUserId, empresa: empresa });
-                await db.ref(`system/accountsIndex/${anonymousUserId}`).set({ pin: pin, empresa: empresa });
+                await db.ref(`contas/${pin}`).set(accountData);
 
-                currentUser = accountData;
-                currentPin = pin;
-                
+                // Criar nós filhos vazios
+                await db.ref(`contas/${pin}/products`).set({});
+                await db.ref(`contas/${pin}/sales`).set({});
+
                 showToast('Conta criada com sucesso!', 'success');
-                showMainApp();
-                syncData();
+                
+                // Limpar formulário
+                document.getElementById('newNome').value = '';
+                document.getElementById('newEmail').value = '';
+                document.getElementById('newEmpresa').value = '';
+                document.getElementById('newNuit').value = '';
+                document.getElementById('newContacto').value = '';
+                document.getElementById('newEndereco').value = '';
+                document.getElementById('newPin').value = '';
+
+                backToMode();
             } catch (err) {
                 showToast('Erro ao criar conta: ' + err.message, 'error');
+                console.error(err);
             }
         }
 
         // ==========================================
-        // LOGIN COM PIN
+        // LOGIN COM PIN - CORRIGIDO
         // ==========================================
         async function loginWithPin() {
             const pin = [
@@ -639,59 +481,33 @@
             }
 
             try {
-                // Buscar conta pelo PIN
-                const pinSnap = await db.ref(`system/pins/${pin}`).once('value');
+                // Buscar conta diretamente pelo PIN (chave primária)
+                const accountSnap = await db.ref(`contas/${pin}`).once('value');
                 
-                if (!pinSnap.exists()) {
+                if (!accountSnap.exists()) {
                     showToast('PIN não encontrado', 'error');
-                    // Limpar inputs
-                    for(let i=1; i<=4; i++) document.getElementById(`pin${i}`).value = '';
+                    clearPinInputs();
                     document.getElementById('pin1').focus();
                     return;
                 }
 
-                const pinData = pinSnap.val();
-                const accountSnap = await db.ref(`accounts/${pinData.uid}`).once('value');
                 const accountData = accountSnap.val();
-
-                if (!accountData) {
-                    showToast('Erro: dados da conta não encontrados', 'error');
-                    return;
-                }
-
-                // Atualizar last access e UID atual (para segurança)
-                await db.ref(`accounts/${pinData.uid}/lastAccess`).set(firebase.database.ServerValue.TIMESTAMP);
-                await db.ref(`accounts/${pinData.uid}/uid`).set(anonymousUserId);
-
-                currentUser = accountData;
                 currentPin = pin;
-                currentUser.uid = pinData.uid; // Usar UID original da conta
+                currentUser = accountData;
 
-                showToast(`Bem-vindo, ${accountData.empresa}!`, 'success');
+                // Atualizar último acesso
+                await db.ref(`contas/${pin}/lastAccess`).set(firebase.database.ServerValue.TIMESTAMP);
+
+                showToast(`Bem-vindo, ${accountData["Nome da empresa"]}!`, 'success');
+                
+                // Limpar PIN inputs
+                clearPinInputs();
+                
                 showMainApp();
                 syncData();
             } catch (err) {
                 showToast('Erro ao entrar: ' + err.message, 'error');
-            }
-        }
-
-        // ==========================================
-        // LOGIN ADMIN
-        // ==========================================
-        async function loginAdmin() {
-            const pin = document.getElementById('adminPin').value;
-            
-            // Verificar PIN admin nas configurações
-            const settingsSnap = await db.ref('system/settings/adminPin').once('value');
-            const adminPin = settingsSnap.val() || systemSettings.adminPin;
-
-            if (pin === adminPin) {
-                isAdmin = true;
-                showToast('Admin console acessado', 'success');
-                showAdminConsole();
-                loadAdminData();
-            } else {
-                showToast('PIN de administrador inválido', 'error');
+                console.error(err);
             }
         }
 
@@ -701,64 +517,50 @@
         function showMainApp() {
             document.getElementById('accessScreen').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
-            document.getElementById('adminConsole').classList.add('hidden');
-        }
-
-        function showAdminConsole() {
-            document.getElementById('accessScreen').classList.add('hidden');
-            document.getElementById('mainApp').classList.add('hidden');
-            document.getElementById('adminConsole').classList.remove('hidden');
         }
 
         function logout() {
+            // Limpar variáveis
             currentUser = null;
             currentPin = null;
-            isAdmin = false;
             cart = [];
             
-            // Limpar PIN inputs
-            for(let i=1; i<=4; i++) document.getElementById(`pin${i}`).value = '';
-            document.getElementById('adminPin').value = '';
+            // Limpar UI
+            clearPinInputs();
+            atualizarCarrinhoUI();
             
-            backToMode();
+            // Voltar para tela de acesso
             document.getElementById('mainApp').classList.add('hidden');
-            document.getElementById('adminConsole').classList.add('hidden');
             document.getElementById('accessScreen').classList.remove('hidden');
+            backToMode();
             
-            // Nova auth anônima
-            auth.signOut().then(() => {
-                auth.signInAnonymously().then(cred => {
-                    anonymousUserId = cred.user.uid;
-                });
-            });
+            showToast('Sessão terminada', 'info');
         }
 
         // ==========================================
         // SINCRONIZAÇÃO DE DADOS
         // ==========================================
         function syncData() {
-            if (!currentUser) return;
-
-            const userRef = db.ref(`accounts/${currentUser.uid}`);
+            if (!currentPin) return;
 
             // Perfil e Travas
-            userRef.on('value', snap => {
+            db.ref(`contas/${currentPin}`).on('value', snap => {
                 const p = snap.val();
                 if (!p) return;
                 
-                document.getElementById('displayEmpresa').innerText = p.empresa || 'Minha Loja';
+                document.getElementById('displayEmpresa').innerText = p["Nome da empresa"] || 'Minha Loja';
                 
                 const agora = new Date().getTime();
-                const dataPrazo = new Date(p.prazo).getTime();
-                const trialLimit = systemSettings.trialLimit || 50;
+                const dataPrazo = new Date(p["Prazo"]).getTime();
+                const trialLimit = 50;
 
-                if (p.activacaoPro === "OFF" && p.vendasContador >= trialLimit) {
+                if (p["activação Pro"] === "OFF" && p.vendasContador >= trialLimit) {
                     showLock(`Limite de ${trialLimit} vendas atingido! Ative o PRO.`);
-                } else if (p.activacaoPro !== "OFF" && agora > dataPrazo && p.prazo !== 'lifetime') {
+                } else if (p["activação Pro"] !== "OFF" && agora > dataPrazo && p["Prazo"] !== 'lifetime') {
                     showLock("Prazo de licença expirado! Renove agora.");
                 } else {
                     document.getElementById('lockScreen').classList.add('hidden');
-                    if(p.activacaoPro !== "OFF") {
+                    if(p["activação Pro"] !== "OFF") {
                         const statusEl = document.getElementById('displayStatus');
                         statusEl.innerHTML = '<i class="fas fa-crown mr-1"></i>PRO ACTIVO';
                         statusEl.className = "text-[10px] text-amber-500 uppercase font-black tracking-wider";
@@ -767,9 +569,13 @@
             });
 
             // Produtos
-            db.ref(`accounts/${currentUser.uid}/products`).on('value', snap => {
+            db.ref(`contas/${currentPin}/products`).on('value', snap => {
                 localProducts = [];
-                snap.forEach(c => { localProducts.push({ id: c.key, ...c.val() }); });
+                snap.forEach(c => { 
+                    if (c.key !== 'products') { // Evitar duplicação do nó
+                        localProducts.push({ id: c.key, ...c.val() }); 
+                    }
+                });
                 renderPOS();
                 renderStock();
                 document.getElementById('stockCount').innerText = `${localProducts.length} produtos`;
@@ -780,7 +586,7 @@
         }
 
         function loadReports() {
-            db.ref(`accounts/${currentUser.uid}/sales`).on('value', snap => {
+            db.ref(`contas/${currentPin}/sales`).on('value', snap => {
                 updateReports(snap);
             });
         }
@@ -794,26 +600,28 @@
             const sales = [];
             snap.forEach(s => {
                 const v = s.val();
-                sales.push({ id: s.key, ...v });
-                
-                if(reportPeriod === 'today' && v.data === hoje) {
-                    totalVendas += v.total;
-                    totalLucro += v.lucro;
-                    transacoes++;
-                } else if (reportPeriod === 'week') {
-                    const saleDate = new Date(v.data);
-                    const weekAgo = new Date(Date.now() - 7*24*60*60*1000);
-                    if(saleDate >= weekAgo) {
+                if (v && v.total) {
+                    sales.push({ id: s.key, ...v });
+                    
+                    if(reportPeriod === 'today' && v.data === hoje) {
                         totalVendas += v.total;
-                        totalLucro += v.lucro;
+                        totalLucro += v.lucro || 0;
                         transacoes++;
-                    }
-                } else if (reportPeriod === 'month') {
-                    const saleDate = new Date(v.data);
-                    if(saleDate.getMonth() === new Date().getMonth()) {
-                        totalVendas += v.total;
-                        totalLucro += v.lucro;
-                        transacoes++;
+                    } else if (reportPeriod === 'week') {
+                        const saleDate = new Date(v.data);
+                        const weekAgo = new Date(Date.now() - 7*24*60*60*1000);
+                        if(saleDate >= weekAgo) {
+                            totalVendas += v.total;
+                            totalLucro += v.lucro || 0;
+                            transacoes++;
+                        }
+                    } else if (reportPeriod === 'month') {
+                        const saleDate = new Date(v.data);
+                        if(saleDate.getMonth() === new Date().getMonth()) {
+                            totalVendas += v.total;
+                            totalLucro += v.lucro || 0;
+                            transacoes++;
+                        }
                     }
                 }
             });
@@ -823,7 +631,7 @@
             document.getElementById('relTransacoes').innerText = transacoes;
 
             // Recent sales
-            const recent = sales.sort((a,b) => b.timestamp - a.timestamp).slice(0, 10);
+            const recent = sales.sort((a,b) => (b.timestamp || 0) - (a.timestamp || 0)).slice(0, 10);
             const recentHtml = recent.map(s => `
                 <div class="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
                     <div>
@@ -832,7 +640,7 @@
                     </div>
                     <div class="text-right">
                         <p class="font-bold text-violet-600">${s.total.toFixed(2)} MT</p>
-                        <p class="text-xs text-green-600">+${s.lucro.toFixed(2)} MT</p>
+                        <p class="text-xs text-green-600">+${(s.lucro || 0).toFixed(2)} MT</p>
                     </div>
                 </div>
             `).join('');
@@ -855,31 +663,24 @@
             const code = document.getElementById('codAtivacao').value.trim();
             if (!code) return showToast('Insira o código de ativação', 'error');
 
-            const codeSnap = await db.ref(`system/licenses/${code}`).once('value');
-            const codeData = codeSnap.val();
-
-            if (codeData && !codeData.used) {
-                const duration = codeData.duration || 365;
-                
-                if (duration === 'lifetime') {
-                    await db.ref(`accounts/${currentUser.uid}/activacaoPro`).set("LIFETIME");
-                    await db.ref(`accounts/${currentUser.uid}/prazo`).set("lifetime");
-                } else {
-                    const newDate = new Date();
-                    newDate.setDate(newDate.getDate() + parseInt(duration));
-                    await db.ref(`accounts/${currentUser.uid}/activacaoPro`).set("ON");
-                    await db.ref(`accounts/${currentUser.uid}/prazo`).set(newDate.toISOString().split('T')[0]);
-                }
-                
-                await db.ref(`system/licenses/${code}/used`).set(true);
-                await db.ref(`system/licenses/${code}/usedBy`).set(currentUser.uid);
-                await db.ref(`system/licenses/${code}/usedAt`).set(firebase.database.ServerValue.TIMESTAMP);
-                
-                showToast('Moz Caixa PRO activado!', 'success');
-                document.getElementById('lockScreen').classList.add('hidden');
-            } else {
-                showToast('Código inválido ou já utilizado', 'error');
+            // Verificar se é um código válido (simples: começa com PRO-)
+            if (!code.startsWith('PRO-')) {
+                showToast('Código inválido', 'error');
+                return;
             }
+
+            // Aqui você pode verificar em uma lista de códigos válidos no Firebase
+            // Por enquanto, aceita qualquer código PRO-XXXX
+            const duration = 365; // 1 ano
+            
+            const newDate = new Date();
+            newDate.setDate(newDate.getDate() + duration);
+            
+            await db.ref(`contas/${currentPin}/activação Pro`).set(code);
+            await db.ref(`contas/${currentPin}/Prazo`).set(newDate.toISOString().split('T')[0]);
+            
+            showToast('Moz Caixa PRO activado!', 'success');
+            document.getElementById('lockScreen').classList.add('hidden');
         }
 
         // ==========================================
@@ -894,19 +695,22 @@
 
             if(!nome || !preco) return showToast("Preencha nome e preço", "error");
 
-            db.ref(`accounts/${currentUser.uid}/products`).push({
-                nome, 
-                preco, 
-                custo: custo || preco * 0.7, 
-                qtd, 
+            const productData = {
+                nome: nome,
+                preco: preco,
+                custo: custo || preco * 0.7,
+                qtd: qtd,
                 divida: div,
                 lucroUnitario: (preco - (custo || preco * 0.7)),
                 createdAt: firebase.database.ServerValue.TIMESTAMP
-            });
+            };
+
+            db.ref(`contas/${currentPin}/products`).push(productData);
             
             fecharModal();
             showToast('Produto adicionado!', 'success');
             
+            // Limpar campos
             document.getElementById('pNome').value = '';
             document.getElementById('pPreco').value = '';
             document.getElementById('pCusto').value = '';
@@ -960,7 +764,7 @@
 
         function deleteProduct(id) {
             if (confirm('Remover este produto?')) {
-                db.ref(`accounts/${currentUser.uid}/products/${id}`).remove();
+                db.ref(`contas/${currentPin}/products/${id}`).remove();
                 showToast('Produto removido', 'success');
             }
         }
@@ -973,7 +777,7 @@
             const grid = document.getElementById('gridProdutos');
             
             grid.innerHTML = localProducts
-                .filter(p => p.nome.toLowerCase().includes(busca) && p.qtd > 0)
+                .filter(p => p.nome && p.nome.toLowerCase().includes(busca) && p.qtd > 0)
                 .map(p => `
                     <div onclick="addCarrinho('${p.id}')" class="card product-card cursor-pointer hover:shadow-lg transition border-2 border-transparent hover:border-violet-200">
                         <div class="flex flex-col h-full">
@@ -1081,7 +885,7 @@
                 const hoje = new Date().toISOString().split('T')[0];
 
                 // Gravar Venda
-                await db.ref(`accounts/${currentUser.uid}/sales`).push({
+                await db.ref(`contas/${currentPin}/sales`).push({
                     items: cart.map(i => ({ id: i.id, nome: i.nome, qty: i.qty, preco: i.preco })),
                     total: total,
                     lucro: lucroTotal,
@@ -1092,9 +896,9 @@
                 // Abater Estoque e Incrementar Contador
                 const updates = {};
                 for(let item of cart) {
-                    updates[`accounts/${currentUser.uid}/products/${item.id}/qtd`] = firebase.database.ServerValue.increment(-item.qty);
+                    updates[`contas/${currentPin}/products/${item.id}/qtd`] = firebase.database.ServerValue.increment(-item.qty);
                 }
-                updates[`accounts/${currentUser.uid}/vendasContador`] = firebase.database.ServerValue.increment(1);
+                updates[`contas/${currentPin}/vendasContador`] = firebase.database.ServerValue.increment(1);
                 
                 await db.ref().update(updates);
 
@@ -1103,182 +907,11 @@
                 atualizarCarrinhoUI();
             } catch (err) {
                 showToast('Erro: ' + err.message, 'error');
+                console.error(err);
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-check-circle mr-2"></i>Finalizar';
             }
-        }
-
-        // ==========================================
-        // ADMIN CONSOLE
-        // ==========================================
-        function adminNav(section) {
-            document.querySelectorAll('#adminConsole section').forEach(s => s.classList.add('hidden'));
-            document.getElementById(`admin-${section}`).classList.remove('hidden');
-            
-            document.querySelectorAll('.admin-nav-item').forEach(btn => btn.classList.remove('bg-white/10'));
-            event.target.closest('button').classList.add('bg-white/10');
-            
-            if (section === 'users') refreshUsers();
-            if (section === 'licenses') loadLicenses();
-        }
-
-        async function loadAdminData() {
-            const [accountsSnap, licensesSnap] = await Promise.all([
-                db.ref('accounts').once('value'),
-                db.ref('system/licenses').once('value')
-            ]);
-
-            const accounts = accountsSnap.val() || {};
-            const licenses = licensesSnap.val() || {};
-            
-            const accountList = Object.entries(accounts);
-            let proCount = 0;
-            let totalSales = 0;
-            let todaySales = 0;
-            const hoje = new Date().toISOString().split('T')[0];
-
-            accountList.forEach(([uid, data]) => {
-                if (data.activacaoPro && data.activacaoPro !== 'OFF') proCount++;
-                
-                const sales = data.sales || {};
-                Object.values(sales).forEach(s => {
-                    totalSales += s.total || 0;
-                    if (s.data === hoje) todaySales += s.total || 0;
-                });
-            });
-
-            const usedLicenses = Object.values(licenses).filter(l => l.used).length;
-
-            document.getElementById('adminTotalUsers').innerText = accountList.length;
-            document.getElementById('adminProLicenses').innerText = proCount;
-            document.getElementById('adminTotalSales').innerText = todaySales.toFixed(0);
-            document.getElementById('adminRevenue').innerText = (usedLicenses * systemSettings.proPrice) + " MT";
-
-            // Activity
-            const recentActivity = accountList
-                .sort((a,b) => (b[1].lastAccess || 0) - (a[1].lastAccess || 0))
-                .slice(0, 5)
-                .map(([uid, data]) => `
-                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
-                        <div>
-                            <p class="font-bold text-sm">${data.empresa}</p>
-                            <p class="text-xs text-gray-500">PIN: ${data.pin}</p>
-                        </div>
-                        <span class="text-xs ${data.activacaoPro !== 'OFF' ? 'text-amber-600 font-bold' : 'text-gray-400'}">
-                            ${data.activacaoPro !== 'OFF' ? 'PRO' : 'Free'}
-                        </span>
-                    </div>
-                `).join('');
-            
-            document.getElementById('adminRecentActivity').innerHTML = recentActivity || '<p class="text-gray-400 text-center">Sem actividade</p>';
-        }
-
-        async function refreshUsers() {
-            const snap = await db.ref('accounts').once('value');
-            const accounts = snap.val() || {};
-            
-            let html = '';
-            Object.entries(accounts).forEach(([uid, data]) => {
-                const sales = data.sales || {};
-                const saleCount = Object.keys(sales).length;
-                const isPro = data.activacaoPro && data.activacaoPro !== 'OFF';
-                
-                html += `
-                    <tr class="border-b hover:bg-gray-50">
-                        <td class="py-3 font-medium">${data.empresa || 'N/A'}</td>
-                        <td class="py-3 font-mono text-gray-600">${data.pin || 'N/A'}</td>
-                        <td class="py-3">
-                            <span class="px-2 py-1 rounded-full text-xs font-bold ${isPro ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-600'}">
-                                ${isPro ? 'PRO' : 'FREE'}
-                            </span>
-                        </td>
-                        <td class="py-3">${saleCount}</td>
-                        <td class="py-3">
-                            <button onclick="viewAccount('${uid}')" class="text-violet-600 hover:text-violet-800 mr-2"><i class="fas fa-eye"></i></button>
-                            <button onclick="deleteAccount('${uid}')" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button>
-                        </td>
-                    </tr>
-                `;
-            });
-            
-            document.getElementById('adminUsersTable').innerHTML = html || '<tr><td colspan="5" class="py-8 text-center text-gray-400">Nenhuma conta</td></tr>';
-        }
-
-        function generateLicenseCode() {
-            const duration = document.getElementById('licenseDuration').value;
-            const code = 'PRO-' + Math.random().toString(36).substring(2, 8).toUpperCase();
-            
-            db.ref(`system/licenses/${code}`).set({
-                code: code,
-                duration: duration,
-                created: firebase.database.ServerValue.TIMESTAMP,
-                used: false
-            });
-            
-            document.getElementById('newLicenseCode').innerText = code;
-            document.getElementById('generatedCode').classList.remove('hidden');
-            showToast('Código gerado!', 'success');
-        }
-
-        function copyLicenseCode() {
-            const code = document.getElementById('newLicenseCode').innerText;
-            navigator.clipboard.writeText(code);
-            showToast('Copiado!', 'success');
-        }
-
-        async function loadLicenses() {
-            const snap = await db.ref('system/licenses').once('value');
-            const licenses = snap.val() || {};
-            
-            let html = '';
-            Object.values(licenses).sort((a,b) => b.created - a.created).forEach(l => {
-                html += `
-                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
-                        <div>
-                            <p class="font-mono font-bold text-gray-800">${l.code}</p>
-                            <p class="text-xs text-gray-500">${l.duration === 'lifetime' ? 'Vitalício' : l.duration + ' dias'}</p>
-                        </div>
-                        <span class="px-3 py-1 rounded-full text-xs font-bold ${l.used ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}">
-                            ${l.used ? 'Usado' : 'Disponível'}
-                        </span>
-                    </div>
-                `;
-            });
-            
-            document.getElementById('activeLicensesList').innerHTML = html || '<p class="text-gray-400 text-center py-4">Nenhum código</p>';
-        }
-
-        function viewAccount(uid) {
-            alert('UID: ' + uid);
-        }
-
-        function deleteAccount(uid) {
-            if (confirm('Remover esta conta permanentemente?')) {
-                db.ref(`accounts/${uid}`).remove();
-                db.ref(`system/accountsIndex/${uid}`).remove();
-                // Remover PIN associado
-                db.ref('system/pins').orderByValue().equalTo(uid).once('value', snap => {
-                    snap.forEach(child => child.ref.remove());
-                });
-                refreshUsers();
-                showToast('Conta removida', 'success');
-            }
-        }
-
-        function saveSettings() {
-            const trialLimit = parseInt(document.getElementById('trialLimit').value);
-            const proPrice = parseInt(document.getElementById('proPrice').value);
-            
-            db.ref('system/settings').update({
-                trialLimit: trialLimit,
-                proPrice: proPrice
-            });
-            
-            systemSettings.trialLimit = trialLimit;
-            systemSettings.proPrice = proPrice;
-            
-            showToast('Configurações guardadas!', 'success');
         }
 
         // ==========================================
