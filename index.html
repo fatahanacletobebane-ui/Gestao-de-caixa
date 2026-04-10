@@ -43,6 +43,15 @@
         .receipt-line { border-top: 1px dashed #000; margin: 5px 0; }
         .receipt-center { text-align: center; }
         .receipt-bold { font-weight: bold; }
+
+        /* SUPPORT BUTTON ANIMATION */
+        .support-btn {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
     </style>
 </head>
 <body class="pb-24">
@@ -51,6 +60,23 @@
     <div id="accessScreen" class="fixed inset-0 bg-gradient-to-br from-violet-700 to-purple-900 z-[100] flex items-center justify-center p-6">
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl animate-fade">
             
+            <!-- SUPPORT INFO ON LOGIN SCREEN -->
+            <div class="mb-6 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-4">
+                <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-headset text-amber-600"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-xs font-bold text-amber-800 uppercase mb-1">Suporte Técnico</p>
+                        <p class="text-sm text-gray-700 mb-2">Precisa de ajuda? Contacte a <strong>Moz1vendas</strong></p>
+                        <a href="https://wa.me/258860407269" target="_blank" class="inline-flex items-center gap-2 bg-green-500 text-white px-3 py-1.5 rounded-lg text-sm font-bold hover:bg-green-600 transition">
+                            <i class="fab fa-whatsapp"></i>
+                            860407269
+                        </a>
+                    </div>
+                </div>
+            </div>
+
             <div id="modeSelect">
                 <div class="text-center mb-6">
                     <div class="w-16 h-16 bg-violet-100 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -58,6 +84,7 @@
                     </div>
                     <h1 class="text-2xl font-black text-gray-800">Moz Caixa</h1>
                     <p class="text-sm text-gray-500">Sistema de Gestão Comercial</p>
+                    <p class="text-xs text-gray-400 mt-1">Powered by Moz1vendas</p>
                 </div>
 
                 <div class="space-y-3">
@@ -66,6 +93,13 @@
                     </button>
                     <button onclick="showNewAccount()" class="w-full bg-gray-100 text-gray-700 py-4 rounded-xl font-bold hover:bg-gray-200 transition">
                         <i class="fas fa-plus-circle mr-2"></i>Nova Conta
+                    </button>
+                </div>
+
+                <!-- ABOUT US LINK -->
+                <div class="mt-6 text-center">
+                    <button onclick="showAboutModal()" class="text-violet-600 text-sm font-bold hover:underline">
+                        <i class="fas fa-info-circle mr-1"></i>Sobre Nós
                     </button>
                 </div>
             </div>
@@ -94,6 +128,14 @@
                 <p class="text-center mt-4 text-sm text-gray-500">
                     <button onclick="recuperarSenha()" class="text-violet-600 font-bold">Esqueceu a senha?</button>
                 </p>
+
+                <!-- SUPPORT INFO -->
+                <div class="mt-6 p-3 bg-gray-50 rounded-xl text-center">
+                    <p class="text-xs text-gray-500 mb-1">Problemas com acesso?</p>
+                    <a href="https://wa.me/258860407269" target="_blank" class="text-green-600 font-bold text-sm">
+                        <i class="fab fa-whatsapp mr-1"></i>860407269
+                    </a>
+                </div>
             </div>
 
             <div id="newAccountForm" class="hidden">
@@ -149,6 +191,17 @@
             <button onclick="ativarPro()" class="w-full bg-gradient-to-r from-amber-500 to-orange-600 text-white py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transition">
                 <i class="fas fa-crown mr-2"></i>ATIVAR PRO
             </button>
+            
+            <!-- SUPPORT INFO ON LOCK SCREEN -->
+            <div class="mt-6 p-4 bg-white/5 rounded-xl border border-white/10">
+                <p class="text-gray-400 text-xs mb-2">Precisa de ajuda para ativar?</p>
+                <a href="https://wa.me/258860407269" target="_blank" class="inline-flex items-center gap-2 text-green-400 font-bold hover:text-green-300 transition">
+                    <i class="fab fa-whatsapp text-lg"></i>
+                    <span>860407269</span>
+                </a>
+                <p class="text-gray-500 text-xs mt-1">Moz1vendas - Suporte Técnico</p>
+            </div>
+            
             <button onclick="logout()" class="mt-4 text-gray-500 text-sm hover:text-white transition">Sair</button>
         </div>
     </div>
@@ -273,7 +326,118 @@
                     <div id="recentSales" class="space-y-2 max-h-64 overflow-y-auto"></div>
                 </div>
             </section>
+
+            <!-- SEÇÃO SOBRE/SUPORTE -->
+            <section id="sec-sobre" class="hidden animate-fade">
+                <div class="text-center mb-6">
+                    <div class="w-20 h-20 bg-gradient-to-br from-violet-600 to-purple-700 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                        <i class="fas fa-store text-3xl text-white"></i>
+                    </div>
+                    <h2 class="text-2xl font-black text-gray-800">Moz Caixa</h2>
+                    <p class="text-sm text-gray-500">Sistema de Gestão Comercial</p>
+                    <p class="text-xs text-violet-600 font-bold mt-1">Versão 1.0</p>
+                </div>
+
+                <!-- ABOUT MOZ1VENDAS -->
+                <div class="card mb-4 border-2 border-violet-100">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-12 h-12 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center shadow-md">
+                            <i class="fas fa-rocket text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-black text-lg text-gray-800">Moz1vendas</h3>
+                            <p class="text-xs text-gray-500">Criadores de Websites Profissionais</p>
+                        </div>
+                    </div>
+                    
+                    <p class="text-sm text-gray-600 mb-4 leading-relaxed">
+                        Somos especialistas em criação de websites modernos e responsivos, 
+                        com <strong>direito a hospedagem</strong> e <strong>preços promocionais</strong> especiais 
+                        para impulsionar o seu negócio digital.
+                    </p>
+
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3 p-3 bg-green-50 rounded-xl">
+                            <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                                <i class="fab fa-whatsapp text-green-600 text-lg"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-xs text-gray-500 uppercase font-bold">WhatsApp</p>
+                                <a href="https://wa.me/258860407269" target="_blank" class="text-green-600 font-black text-lg hover:underline">
+                                    860407269
+                                </a>
+                            </div>
+                            <i class="fas fa-external-link-alt text-gray-400"></i>
+                        </div>
+
+                        <div class="flex items-center gap-3 p-3 bg-violet-50 rounded-xl">
+                            <div class="w-10 h-10 bg-violet-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-envelope text-violet-600 text-lg"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-xs text-gray-500 uppercase font-bold">Email</p>
+                                <p class="text-gray-800 font-bold text-sm">moz1vendas@email.com</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-3 p-3 bg-blue-50 rounded-xl">
+                            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-globe text-blue-600 text-lg"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-xs text-gray-500 uppercase font-bold">Website</p>
+                                <p class="text-gray-800 font-bold text-sm">www.moz1vendas.co.mz</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 p-3 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200">
+                        <p class="text-xs text-amber-800 text-center">
+                            <i class="fas fa-gift mr-1"></i>
+                            <strong>Promoção Especial:</strong> Websites com hospedagem grátis no primeiro ano!
+                        </p>
+                    </div>
+                </div>
+
+                <!-- APP INFO -->
+                <div class="card mb-4">
+                    <h3 class="font-bold text-gray-800 mb-3"><i class="fas fa-info-circle mr-2 text-violet-600"></i>Sobre o Moz Caixa</h3>
+                    <div class="space-y-2 text-sm text-gray-600">
+                        <p><strong>Funções:</strong></p>
+                        <ul class="list-disc list-inside space-y-1 ml-2">
+                            <li>Gestão de vendas em tempo real</li>
+                            <li>Controle de stock e inventário</li>
+                            <li>Relatórios financeiros detalhados</li>
+                            <li>Emissão de recibos profissionais</li>
+                            <li>Sincronização na nuvem (Firebase)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- SUPPORT CTA -->
+                <div class="card bg-gradient-to-br from-gray-800 to-gray-900 text-white">
+                    <div class="text-center">
+                        <i class="fas fa-headset text-3xl text-amber-400 mb-2"></i>
+                        <h3 class="font-bold mb-2">Precisa de Ajuda?</h3>
+                        <p class="text-sm text-gray-300 mb-4">Nossa equipa está disponível para assistência técnica</p>
+                        <a href="https://wa.me/258860407269" target="_blank" class="inline-flex items-center gap-2 bg-green-500 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:bg-green-600 transition support-btn">
+                            <i class="fab fa-whatsapp text-xl"></i>
+                            Falar com Suporte
+                        </a>
+                    </div>
+                </div>
+
+                <div class="text-center mt-6 text-xs text-gray-400">
+                    <p>© 2024 Moz Caixa - Todos os direitos reservados</p>
+                    <p class="mt-1">Desenvolvido por Moz1vendas</p>
+                </div>
+            </section>
         </main>
+
+        <!-- FLOATING SUPPORT BUTTON -->
+        <button onclick="showAboutModal()" class="fixed bottom-24 right-4 w-14 h-14 bg-gradient-to-br from-green-500 to-green-600 text-white rounded-full shadow-xl flex items-center justify-center z-40 hover:scale-110 transition support-btn" title="Suporte">
+            <i class="fab fa-whatsapp text-2xl"></i>
+        </button>
 
         <nav class="fixed bottom-0 left-0 right-0 glass border-t flex justify-around p-3 z-50">
             <button onclick="nav('vendas')" id="nav-vendas" class="active-tab flex flex-col items-center p-2 rounded-xl transition">
@@ -288,7 +452,74 @@
                 <i class="fas fa-chart-pie text-xl mb-1"></i>
                 <span class="text-[10px] font-bold">Relatórios</span>
             </button>
+            <button onclick="nav('sobre')" id="nav-sobre" class="flex flex-col items-center text-gray-400 p-2 rounded-xl transition hover:text-violet-600">
+                <i class="fas fa-info-circle text-xl mb-1"></i>
+                <span class="text-[10px] font-bold">Sobre</span>
+            </button>
         </nav>
+    </div>
+
+    <!-- MODAL SOBRE (VERSÃO COMPACTA) -->
+    <div id="aboutModal" class="fixed inset-0 bg-black/80 z-[200] hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl p-6 max-w-sm w-full max-h-[90vh] overflow-y-auto animate-fade">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-black text-lg text-gray-800">Sobre Moz1vendas</h3>
+                <button onclick="closeAboutModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-3 shadow-lg">
+                    <i class="fas fa-rocket text-white text-2xl"></i>
+                </div>
+                <h4 class="font-bold text-gray-800">Criadores de Websites</h4>
+                <p class="text-xs text-gray-500">Hospedagem + Preços Promocionais</p>
+            </div>
+
+            <div class="space-y-3 mb-6">
+                <a href="https://wa.me/258860407269" target="_blank" class="flex items-center gap-3 p-4 bg-green-50 rounded-xl hover:bg-green-100 transition">
+                    <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                        <i class="fab fa-whatsapp text-white"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-xs text-gray-500">WhatsApp</p>
+                        <p class="font-bold text-green-700">860407269</p>
+                    </div>
+                    <i class="fas fa-chevron-right text-gray-400"></i>
+                </a>
+
+                <div class="flex items-center gap-3 p-4 bg-violet-50 rounded-xl">
+                    <div class="w-10 h-10 bg-violet-500 rounded-full flex items-center justify-center">
+                        <i class="fas fa-envelope text-white"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-xs text-gray-500">Email</p>
+                        <p class="font-bold text-violet-700 text-sm">moz1vendas@email.com</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3 p-4 bg-blue-50 rounded-xl">
+                    <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                        <i class="fas fa-globe text-white"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-xs text-gray-500">Website</p>
+                        <p class="font-bold text-blue-700 text-sm">www.moz1vendas.co.mz</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-r from-amber-100 to-orange-100 rounded-xl p-4 text-center">
+                <i class="fas fa-gift text-amber-500 text-2xl mb-2"></i>
+                <p class="text-sm text-amber-800 font-bold mb-1">Preços Promocionais!</p>
+                <p class="text-xs text-amber-700">Websites com hospedagem grátis no primeiro ano</p>
+            </div>
+
+            <button onclick="closeAboutModal()" class="w-full mt-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200 transition">
+                Fechar
+            </button>
+        </div>
     </div>
 
     <!-- MODAL PRODUTO -->
@@ -424,7 +655,7 @@
         let currentFilter = 'all';
         let reportPeriod = 'today';
         let lastSaleData = null;
-        let clienteDados = { nome: '', nuit: '' }; // Dados do cliente para recibo
+        let clienteDados = { nome: '', nuit: '' };
 
         // ==========================================
         // NAVEGAÇÃO ENTRE TELAS
@@ -444,6 +675,14 @@
         function showNewAccount() {
             document.getElementById('modeSelect').classList.add('hidden');
             document.getElementById('newAccountForm').classList.remove('hidden');
+        }
+
+        function showAboutModal() {
+            document.getElementById('aboutModal').classList.remove('hidden');
+        }
+
+        function closeAboutModal() {
+            document.getElementById('aboutModal').classList.add('hidden');
         }
 
         function encodeEmail(email) {
@@ -586,7 +825,7 @@
         }
 
         function recuperarSenha() {
-            showToast('Entre em contato com o administrador', 'info');
+            showToast('Entre em contato com o administrador: 860407269', 'info');
         }
 
         function showMainApp() {
@@ -909,7 +1148,6 @@
         async function finalizarVenda() {
             if(cart.length === 0) return showToast('Carrinho vazio!', 'error');
             
-            // Abrir modal para dados do cliente (opcional)
             document.getElementById('clienteModal').classList.remove('hidden');
             document.getElementById('clienteNome').focus();
         }
@@ -1006,7 +1244,6 @@
             const subtotal = data.total / 1.16;
             const iva = data.total - subtotal;
 
-            // Verificar se tem dados do cliente
             const temCliente = data.clienteNome || data.clienteNuit;
 
             let html = `
@@ -1030,7 +1267,6 @@
                 </div>
             `;
 
-            // ADICIONAR DADOS DO CLIENTE SE EXISTIREM
             if (temCliente) {
                 html += `
                     <div class="receipt-line"></div>
@@ -1196,9 +1432,13 @@
             if (e.target === e.currentTarget) fecharModal();
         });
 
+        document.getElementById('aboutModal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) closeAboutModal();
+        });
+
         document.getElementById('clienteModal').addEventListener('click', (e) => {
             if (e.target === e.currentTarget) {
-                // Não fechar ao clicar fora, só pelos botões
+                // Não fechar ao clicar fora
             }
         });
 
@@ -1206,7 +1446,7 @@
             if (e.key === 'Escape') {
                 fecharModal();
                 fecharRecibo();
-                // Não fechar clienteModal com ESC para evitar perda de dados
+                closeAboutModal();
             }
         });
     </script>
