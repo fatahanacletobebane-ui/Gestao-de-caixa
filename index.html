@@ -3,105 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Moz Caixa - PDV Profissional</title>
+    <title>Moz Caixa - Sistema Profissional</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
-        .hidden { display: none; }
-        .active-tab { border-bottom: 4px solid #7c3aed; color: #7c3aed; }
-        body { background-color: #f8fafc; -webkit-tap-highlight-color: transparent; }
+        body { background-color: #f1f5f9; font-family: sans-serif; -webkit-tap-highlight-color: transparent; }
+        .hidden { display: none !important; }
+        .active-tab { color: #7c3aed; border-bottom: 3px solid #7c3aed; }
+        .card { background: white; border-radius: 15px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
     </style>
 </head>
-<body class="font-sans">
+<body class="pb-24">
 
-    <div id="lockScreen" class="fixed inset-0 z-[100] bg-slate-900 text-white flex flex-col items-center justify-center p-6 text-center hidden">
-        <i class="fas fa-lock text-6xl text-amber-500 mb-4"></i>
-        <h1 id="lockMessage" class="text-2xl font-bold mb-6">Acesso Bloqueado</h1>
-        <div class="bg-slate-800 p-4 rounded-xl mb-6 w-full max-w-sm">
-            <p class="text-sm text-slate-400 mb-2">Insira o código de ativação PRO</p>
-            <input type="text" id="activationInput" class="w-full bg-slate-700 p-3 rounded text-center text-xl font-mono" placeholder="XXXX-XXXX">
+    <div id="authScreen" class="fixed inset-0 bg-violet-700 z-[100] flex items-center justify-center p-6">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl">
+            <h1 class="text-2xl font-black text-center text-violet-700 mb-6">Moz Caixa 🚀</h1>
+            
+            <div id="loginForm">
+                <input type="email" id="email" placeholder="Email" class="w-full p-4 bg-gray-100 rounded-xl mb-3 outline-none">
+                <input type="password" id="pass" placeholder="Senha" class="w-full p-4 bg-gray-100 rounded-xl mb-4 outline-none">
+                <button onclick="handleLogin()" class="w-full bg-violet-600 text-white py-4 rounded-xl font-bold mb-4">Entrar</button>
+                <p class="text-center text-sm text-gray-500">Não tem conta? <button onclick="toggleAuth()" class="text-violet-600 font-bold">Registar</button></p>
+            </div>
+
+            <div id="registerForm" class="hidden">
+                <input type="text" id="regEmpresa" placeholder="Nome da Empresa" class="w-full p-3 bg-gray-100 rounded-xl mb-2">
+                <input type="text" id="regNuit" placeholder="NUIT" class="w-full p-3 bg-gray-100 rounded-xl mb-2">
+                <input type="email" id="regEmail" placeholder="Email" class="w-full p-3 bg-gray-100 rounded-xl mb-2">
+                <input type="password" id="regPass" placeholder="Senha" class="w-full p-3 bg-gray-100 rounded-xl mb-3">
+                <button onclick="handleRegister()" class="w-full bg-green-600 text-white py-4 rounded-xl font-bold mb-4">Criar Conta</button>
+                <button onclick="toggleAuth()" class="w-full text-gray-400 text-sm">Voltar ao Login</button>
+            </div>
         </div>
-        <button onclick="activatePro()" class="bg-violet-600 w-full max-w-sm py-4 rounded-xl font-bold">Ativar Sistema</button>
     </div>
 
-    <nav id="bottomNav" class="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around p-2 z-50">
-        <button onclick="showSection('pos')" class="flex flex-col items-center p-2 text-slate-500" id="btn-pos">
-            <i class="fas fa-shopping-cart text-xl"></i><span class="text-[10px]">Vendas</span>
+    <div id="lockScreen" class="fixed inset-0 bg-black/95 z-[110] hidden flex flex-col items-center justify-center p-8 text-center">
+        <i class="fas fa-lock text-6xl text-amber-500 mb-6"></i>
+        <h2 id="lockMsg" class="text-white text-xl font-bold mb-6">Limite de 50 vendas atingido!</h2>
+        <input type="text" id="codAtivacao" placeholder="Código de Ativação" class="w-full max-w-xs p-4 rounded-xl text-center mb-4">
+        <button onclick="ativarPro()" class="bg-amber-500 text-white px-10 py-4 rounded-xl font-bold">ATIVAR PRO</button>
+    </div>
+
+    <header class="bg-white p-4 flex justify-between items-center border-b sticky top-0 z-40">
+        <div>
+            <h2 id="displayEmpresa" class="font-bold text-gray-800">Minha Loja</h2>
+            <p id="displayStatus" class="text-[10px] text-orange-500 uppercase font-black">Modo Teste</p>
+        </div>
+        <button onclick="auth.signOut()" class="text-red-500 text-sm font-bold">Sair</button>
+    </header>
+
+    <main class="p-4">
+        
+        <section id="sec-vendas">
+            <input type="text" id="busca" oninput="renderPOS()" placeholder="🔍 Procurar produto..." class="w-full p-4 rounded-2xl border-none shadow-sm mb-4">
+            
+            <div id="gridProdutos" class="grid grid-cols-2 gap-3 mb-6"></div>
+
+            <div class="card">
+                <h3 class="font-black mb-3 border-b pb-2"><i class="fas fa-shopping-basket mr-2"></i>Carrinho</h3>
+                <div id="listaCarrinho" class="space-y-2 mb-4 max-h-48 overflow-y-auto"></div>
+                <div class="flex justify-between text-xl font-black">
+                    <span>Total:</span>
+                    <span id="totalCarrinho">0.00 MT</span>
+                </div>
+                <button onclick="finalizarVenda()" class="w-full bg-violet-600 text-white py-4 rounded-2xl mt-4 font-bold shadow-lg shadow-violet-200">FINALIZAR VENDA</button>
+            </div>
+        </section>
+
+        <section id="sec-estoque" class="hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="font-black text-xl">Inventário</h2>
+                <button onclick="abrirModalProduto()" class="bg-black text-white px-4 py-2 rounded-lg text-sm">+ Adicionar</button>
+            </div>
+            <div id="listaEstoque" class="space-y-3"></div>
+        </section>
+
+        <section id="sec-relatorios" class="hidden text-center">
+            <h2 class="font-black text-xl mb-4">Resumo Diário</h2>
+            <div class="grid grid-cols-1 gap-4">
+                <div class="card bg-violet-50">
+                    <p class="text-sm text-violet-600 font-bold uppercase">Total Vendido</p>
+                    <h4 id="relTotal" class="text-3xl font-black">0.00 MT</h4>
+                </div>
+                <div class="card bg-green-50">
+                    <p class="text-sm text-green-600 font-bold uppercase">Lucro Líquido</p>
+                    <h4 id="relLucro" class="text-3xl font-black">0.00 MT</h4>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around p-3 z-50">
+        <button onclick="nav('vendas')" id="nav-vendas" class="active-tab flex flex-col items-center">
+            <i class="fas fa-cash-register text-xl"></i><span class="text-[10px] font-bold">Caixa</span>
         </button>
-        <button onclick="showSection('stock')" class="flex flex-col items-center p-2 text-slate-500" id="btn-stock">
-            <i class="fas fa-box text-xl"></i><span class="text-[10px]">Estoque</span>
+        <button onclick="nav('estoque')" id="nav-estoque" class="flex flex-col items-center text-gray-400">
+            <i class="fas fa-boxes text-xl"></i><span class="text-[10px] font-bold">Estoque</span>
         </button>
-        <button onclick="showSection('reports')" class="flex flex-col items-center p-2 text-slate-500" id="btn-reports">
-            <i class="fas fa-chart-line text-xl"></i><span class="text-[10px]">Relatórios</span>
-        </button>
-        <button onclick="logout()" class="flex flex-col items-center p-2 text-red-500">
-            <i class="fas fa-sign-out-alt text-xl"></i><span class="text-[10px]">Sair</span>
+        <button onclick="nav('relatorios')" id="nav-relatorios" class="flex flex-col items-center text-gray-400">
+            <i class="fas fa-chart-pie text-xl"></i><span class="text-[10px] font-bold">Relatórios</span>
         </button>
     </nav>
 
-    <div class="p-4 pb-20">
-        <section id="posSection" class="fade-in">
-            <h2 class="text-xl font-black mb-4">Moz Caixa <span class="text-xs bg-violet-100 text-violet-600 px-2 py-1 rounded">POS</span></h2>
-            <div class="mb-4">
-                <input type="text" id="searchBar" oninput="renderPosProducts()" placeholder="Buscar produto..." class="w-full p-3 rounded-xl border-2 border-slate-200">
-            </div>
-            <div id="posGrid" class="grid grid-cols-2 gap-3 mb-4"></div>
-            
-            <div class="bg-white p-4 rounded-2xl shadow-xl border border-slate-200">
-                <h3 class="font-bold mb-2">Carrinho</h3>
-                <div id="cartList" class="max-h-40 overflow-y-auto mb-4 text-sm space-y-2"></div>
-                <div class="flex justify-between font-black text-lg border-t pt-2">
-                    <span>Total:</span>
-                    <span id="cartTotal">0.00 MT</span>
-                </div>
-                <button onclick="finalizeSale()" class="w-full bg-green-600 text-white py-4 rounded-xl mt-4 font-bold shadow-lg">FINALIZAR VENDA</button>
-            </div>
-        </section>
-
-        <section id="stockSection" class="hidden">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold">Estoque</h2>
-                <button onclick="toggleModal('productModal')" class="bg-violet-600 text-white p-2 rounded-lg text-sm">+ Novo</button>
-            </div>
-            <div id="stockList" class="space-y-3"></div>
-        </section>
-
-        <section id="reportsSection" class="hidden">
-            <h2 class="text-xl font-bold mb-4">Relatório Diário</h2>
-            <div class="grid grid-cols-2 gap-3">
-                <div class="bg-white p-4 rounded-xl shadow-sm border">
-                    <p class="text-xs text-slate-500">Vendas de Hoje</p>
-                    <p id="repSales" class="text-xl font-black">0.00 MT</p>
-                </div>
-                <div class="bg-white p-4 rounded-xl shadow-sm border">
-                    <p class="text-xs text-slate-500">Lucro Estimado</p>
-                    <p id="repProfit" class="text-xl font-black text-green-600">0.00 MT</p>
-                </div>
-            </div>
-        </section>
-    </div>
-
-    <div id="productModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white w-full rounded-2xl p-6 max-h-[90vh] overflow-y-auto">
-            <h3 class="font-bold text-lg mb-4">Cadastrar Produto</h3>
+    <div id="modalProd" class="fixed inset-0 bg-black/60 z-[120] hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6">
+            <h3 class="font-black text-lg mb-4">Novo Produto</h3>
             <div class="space-y-3">
-                <input type="text" id="pName" placeholder="Nome do Produto" class="w-full p-3 border rounded-xl">
-                <div class="grid grid-cols-2 gap-2">
-                    <input type="number" id="pPrice" placeholder="Preço Venda" class="p-3 border rounded-xl">
-                    <input type="number" id="pCost" placeholder="Preço Custo" class="p-3 border rounded-xl">
+                <input type="text" id="pNome" placeholder="Nome do Produto" class="w-full p-3 bg-gray-50 rounded-xl border">
+                <div class="flex gap-2">
+                    <input type="number" id="pPreco" placeholder="Preço Venda" class="w-1/2 p-3 bg-gray-50 rounded-xl border">
+                    <input type="number" id="pCusto" placeholder="Preço Custo" class="w-1/2 p-3 bg-gray-50 rounded-xl border">
                 </div>
-                <input type="number" id="pQty" placeholder="Quantidade em Estoque" class="w-full p-3 border rounded-xl">
-                <select id="pDebt" class="w-full p-3 border rounded-xl">
+                <input type="number" id="pQtd" placeholder="Quantidade" class="w-full p-3 bg-gray-50 rounded-xl border">
+                <select id="pDivida" class="w-full p-3 bg-gray-50 rounded-xl border">
                     <option value="Não">Sem dívida com fornecedor</option>
                     <option value="Sim">Com dívida com fornecedor</option>
                 </select>
             </div>
-            <div class="flex gap-2 mt-6">
-                <button onclick="toggleModal('productModal')" class="flex-1 py-3 border rounded-xl">Cancelar</button>
-                <button onclick="saveProduct()" class="flex-1 py-3 bg-violet-600 text-white rounded-xl font-bold">Salvar</button>
+            <div class="flex gap-3 mt-6">
+                <button onclick="fecharModal()" class="flex-1 py-3 text-gray-400 font-bold">Cancelar</button>
+                <button onclick="salvarProduto()" class="flex-1 py-3 bg-violet-600 text-white rounded-xl font-bold">Guardar</button>
             </div>
         </div>
     </div>
@@ -118,182 +144,212 @@
             appId: "1:400751100510:web:e195695191607d02e46acf"
         };
         firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
         const auth = firebase.auth();
+        const db = firebase.database();
 
-        let currentUid = null;
-        let products = [];
+        let userState = null;
+        let localProducts = [];
         let cart = [];
-        let userProfile = {};
 
-        // INICIALIZAÇÃO E PERSISTÊNCIA
+        // PERSISTÊNCIA E LOGIN
         auth.onAuthStateChanged(user => {
-            if(user) {
-                currentUid = user.uid;
-                loadData();
+            if (user) {
+                userState = user;
+                document.getElementById('authScreen').classList.add('hidden');
+                syncData();
             } else {
-                // Para simplificar no celular, se não houver user, cria um ou pede login
-                // Aqui você pode redirecionar para sua página de login
-                window.location.href = "login.html"; 
+                document.getElementById('authScreen').classList.remove('hidden');
             }
         });
 
-        function loadData() {
-            // Perfil e Segurança
-            db.ref(`users/${currentUid}/profile`).on('value', snap => {
-                userProfile = snap.val() || {};
-                checkSecurity();
+        async function handleLogin() {
+            const e = document.getElementById('email').value;
+            const p = document.getElementById('pass').value;
+            try { await auth.signInWithEmailAndPassword(e, p); } catch(err) { alert(err.message); }
+        }
+
+        async function handleRegister() {
+            const e = document.getElementById('regEmail').value;
+            const p = document.getElementById('regPass').value;
+            const n = document.getElementById('regEmpresa').value;
+            const nuit = document.getElementById('regNuit').value;
+
+            try {
+                const res = await auth.createUserWithEmailAndPassword(e, p);
+                await db.ref(`users/${res.user.uid}/profile`).set({
+                    nomeEmpresa: n,
+                    nuit: nuit,
+                    activacaoPro: "OFF",
+                    prazo: "2026-12-31",
+                    vendasContador: 0
+                });
+            } catch(err) { alert(err.message); }
+        }
+
+        // SINCRONIZAÇÃO E SEGURANÇA
+        function syncData() {
+            // Perfil e Travas
+            db.ref(`users/${userState.uid}/profile`).on('value', snap => {
+                const p = snap.val();
+                document.getElementById('displayEmpresa').innerText = p.nomeEmpresa;
+                
+                const agora = new Date().getTime();
+                const dataPrazo = new Date(p.prazo).getTime();
+
+                if (p.activacaoPro === "OFF" && p.vendasContador >= 50) {
+                    showLock("Limite de 50 vendas atingido!");
+                } else if (p.activacaoPro !== "OFF" && agora > dataPrazo) {
+                    showLock("Prazo de licença expirado!");
+                } else {
+                    document.getElementById('lockScreen').classList.add('hidden');
+                    if(p.activacaoPro !== "OFF") {
+                        document.getElementById('displayStatus').innerText = "Nível PRO Activo";
+                        document.getElementById('displayStatus').className = "text-[10px] text-green-500 uppercase font-black";
+                    }
+                }
             });
 
             // Produtos
-            db.ref(`users/${currentUid}/products`).on('value', snap => {
-                products = [];
-                snap.forEach(child => {
-                    products.push({ id: child.key, ...child.val() });
-                });
-                renderPosProducts();
+            db.ref(`users/${userState.uid}/products`).on('value', snap => {
+                localProducts = [];
+                snap.forEach(c => { localProducts.push({ id: c.key, ...c.val() }); });
+                renderPOS();
                 renderStock();
             });
 
-            // Relatórios (Vendas de hoje)
-            const today = new Date().toISOString().split('T')[0];
-            db.ref(`users/${currentUid}/sales`).on('value', snap => {
-                let total = 0; let lucro = 0; let count = 0;
+            // Relatórios
+            db.ref(`users/${userState.uid}/sales`).on('value', snap => {
+                let totalVendas = 0; let totalLucro = 0;
+                const hoje = new Date().toISOString().split('T')[0];
                 snap.forEach(s => {
-                    const sale = s.val();
-                    if(sale.date === today) {
-                        total += sale.total;
-                        lucro += (sale.lucro || 0);
+                    const v = s.val();
+                    if(v.data === hoje) {
+                        totalVendas += v.total;
+                        totalLucro += v.lucro;
                     }
-                    count++;
                 });
-                document.getElementById('repSales').innerText = total.toFixed(2) + " MT";
-                document.getElementById('repProfit').innerText = lucro.toFixed(2) + " MT";
-                userProfile.totalSalesCount = count;
+                document.getElementById('relTotal').innerText = totalVendas.toFixed(2) + " MT";
+                document.getElementById('relLucro').innerText = totalLucro.toFixed(2) + " MT";
             });
-        }
-
-        function checkSecurity() {
-            const now = new Date().getTime();
-            const prazo = new Date(userProfile.prazo).getTime();
-            
-            if (userProfile.activacaoPro === "OFF" && (userProfile.totalSalesCount >= 50)) {
-                showLock("Limite de 50 vendas atingido. Ative o PRO!");
-            } else if (userProfile.activacaoPro !== "OFF" && now > prazo) {
-                showLock("Seu prazo PRO expirou. Renove agora!");
-            }
         }
 
         function showLock(msg) {
             document.getElementById('lockScreen').classList.remove('hidden');
-            document.getElementById('lockMessage').innerText = msg;
+            document.getElementById('lockMsg').innerText = msg;
         }
 
-        // FUNÇÕES DE PRODUTO
-        function saveProduct() {
-            const name = document.getElementById('pName').value;
-            const price = parseFloat(document.getElementById('pPrice').value);
-            const cost = parseFloat(document.getElementById('pCost').value);
-            const qty = parseInt(document.getElementById('pQty').value);
-            const debt = document.getElementById('pDebt').value;
+        // LÓGICA DE ESTOQUE
+        function salvarProduto() {
+            const nome = document.getElementById('pNome').value;
+            const preco = parseFloat(document.getElementById('pPreco').value);
+            const custo = parseFloat(document.getElementById('pCusto').value);
+            const qtd = parseInt(document.getElementById('pQtd').value);
+            const div = document.getElementById('pDivida').value;
 
-            if(!name || !price) return alert("Preencha os campos!");
+            if(!nome || !preco) return alert("Dados incompletos");
 
-            db.ref(`users/${currentUid}/products`).push({
-                name, price, cost, qty, debt, 
-                lucroUnitario: (price - cost)
+            db.ref(`users/${userState.uid}/products`).push({
+                nome, preco, custo, qtd, div, lucroUnitario: (preco - custo)
             });
-            
-            toggleModal('productModal');
+            fecharModal();
         }
 
-        // VENDAS (POS)
-        function renderPosProducts() {
-            const query = document.getElementById('searchBar').value.toLowerCase();
-            const grid = document.getElementById('posGrid');
-            grid.innerHTML = "";
-
-            products.filter(p => p.name.toLowerCase().includes(query) && p.qty > 0).forEach(p => {
-                grid.innerHTML += `
-                    <div onclick="addToCart('${p.id}')" class="bg-white p-3 rounded-xl shadow-sm border border-slate-200 active:scale-95 transition">
-                        <p class="font-bold text-sm truncate">${p.name}</p>
-                        <p class="text-violet-600 font-black">${p.price.toFixed(2)} MT</p>
-                        <p class="text-[10px] text-slate-400">Estoque: ${p.qty}</p>
+        function renderStock() {
+            const list = document.getElementById('listaEstoque');
+            list.innerHTML = localProducts.map(p => `
+                <div class="card flex justify-between items-center">
+                    <div>
+                        <p class="font-bold">${p.nome}</p>
+                        <p class="text-xs text-gray-400">Preço: ${p.preco} MT | Lucro: ${p.lucroUnitario} MT</p>
                     </div>
-                `;
-            });
+                    <div class="text-right">
+                        <p class="text-lg font-black ${p.qtd <= 0 ? 'text-red-500' : 'text-violet-600'}">${p.qtd}</p>
+                        <p class="text-[10px] font-bold uppercase">Em Stock</p>
+                    </div>
+                </div>
+            `).join('');
         }
 
-        function addToCart(id) {
-            const p = products.find(item => item.id === id);
-            const inCart = cart.find(item => item.id === id);
-            if(inCart) {
-                if(inCart.qty < p.qty) inCart.qty++;
+        // LÓGICA DE VENDAS
+        function renderPOS() {
+            const busca = document.getElementById('busca').value.toLowerCase();
+            const grid = document.getElementById('gridProdutos');
+            grid.innerHTML = localProducts
+                .filter(p => p.nome.toLowerCase().includes(busca) && p.qtd > 0)
+                .map(p => `
+                    <div onclick="addCarrinho('${p.id}')" class="card active:scale-95 transition text-center">
+                        <p class="font-bold text-sm truncate">${p.nome}</p>
+                        <p class="text-violet-600 font-black">${p.preco.toFixed(2)} MT</p>
+                        <p class="text-[9px] text-gray-400">Stock: ${p.qtd}</p>
+                    </div>
+                `).join('');
+        }
+
+        function addCarrinho(id) {
+            const p = localProducts.find(x => x.id === id);
+            const exist = cart.find(x => x.id === id);
+            if(exist) {
+                if(exist.qty < p.qty) exist.qty++;
             } else {
                 cart.push({ ...p, qty: 1 });
             }
-            renderCart();
+            atualizarCarrinhoUI();
         }
 
-        function renderCart() {
-            const list = document.getElementById('cartList');
-            list.innerHTML = cart.map(i => `
-                <div class="flex justify-between items-center bg-slate-50 p-2 rounded">
-                    <span>${i.name} (x${i.qty})</span>
-                    <span class="font-bold">${(i.price * i.qty).toFixed(2)} MT</span>
+        function atualizarCarrinhoUI() {
+            const lista = document.getElementById('listaCarrinho');
+            lista.innerHTML = cart.map(i => `
+                <div class="flex justify-between text-sm bg-gray-50 p-2 rounded-lg">
+                    <span>${i.nome} x${i.qty}</span>
+                    <span class="font-bold">${(i.preco * i.qty).toFixed(2)}</span>
                 </div>
             `).join('');
-            
-            const total = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
-            document.getElementById('cartTotal').innerText = total.toFixed(2) + " MT";
+            const total = cart.reduce((a, b) => a + (b.preco * b.qty), 0);
+            document.getElementById('totalCarrinho').innerText = total.toFixed(2) + " MT";
         }
 
-        async function finalizeSale() {
+        async function finalizarVenda() {
             if(cart.length === 0) return;
             
-            const total = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
-            const totalLucro = cart.reduce((sum, i) => sum + (i.lucroUnitario * i.qty), 0);
-            const today = new Date().toISOString().split('T')[0];
+            const total = cart.reduce((a, b) => a + (b.preco * b.qty), 0);
+            const lucroTotal = cart.reduce((a, b) => a + (b.lucroUnitario * b.qty), 0);
+            const hoje = new Date().toISOString().split('T')[0];
 
-            const updates = {};
-            cart.forEach(item => {
-                updates[`users/${currentUid}/products/${item.id}/qty`] = item.qtyAtual - item.qty; // Note: precisa pegar qty atualizado
-                // Simplificado para o exemplo, o ideal é usar transação ou ref de estoque
-            });
-
-            // Salvar Venda
-            await db.ref(`users/${currentUid}/sales`).push({
+            // 1. Gravar Venda
+            await db.ref(`users/${userState.uid}/sales`).push({
                 items: cart,
                 total: total,
-                lucro: totalLucro,
-                date: today,
+                lucro: lucroTotal,
+                data: hoje,
                 timestamp: firebase.database.ServerValue.TIMESTAMP
             });
 
-            // Abater Estoque Real
+            // 2. Abater Estoque e Incrementar Contador
             for(let item of cart) {
-                const pRef = db.ref(`users/${currentUid}/products/${item.id}/qty`);
-                pRef.set(firebase.database.ServerValue.increment(-item.qty));
+                db.ref(`users/${userState.uid}/products/${item.id}/qtd`).set(firebase.database.ServerValue.increment(-item.qty));
             }
+            db.ref(`users/${userState.uid}/profile/vendasContador`).set(firebase.database.ServerValue.increment(1));
 
-            alert("Venda Concluída!");
+            alert("Venda com Sucesso!");
             cart = [];
-            renderCart();
+            atualizarCarrinhoUI();
         }
 
-        // UTILITÁRIOS
-        function showSection(id) {
+        // NAVEGAÇÃO E MODAIS
+        function nav(id) {
             document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
-            document.getElementById(id + 'Section').classList.remove('hidden');
+            document.getElementById('sec-' + id).classList.remove('hidden');
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active-tab', 'text-gray-400'));
+            document.getElementById('nav-' + id).classList.add('active-tab');
         }
 
-        function toggleModal(id) {
-            document.getElementById(id).classList.toggle('hidden');
+        function toggleAuth() {
+            document.getElementById('loginForm').classList.toggle('hidden');
+            document.getElementById('registerForm').classList.toggle('hidden');
         }
 
-        function logout() {
-            auth.signOut();
-        }
+        function abrirModalProduto() { document.getElementById('modalProd').classList.remove('hidden'); }
+        function fecharModal() { document.getElementById('modalProd').classList.add('hidden'); }
     </script>
 </body>
 </html>
