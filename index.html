@@ -978,10 +978,10 @@
             document.getElementById('lockScreen').classList.add('hidden');
         }
 
+                // ==========================================
+        // ESTOQUE - ACTUALIZADO
         // ==========================================
-        // ESTOQUE
-        // ==========================================
-        function salvarProduto() {
+        async function salvarProduto() {
             const nome = document.getElementById('pNome').value.trim();
             const preco = parseFloat(document.getElementById('pPreco').value);
             const custo = parseFloat(document.getElementById('pCusto').value) || 0;
@@ -989,20 +989,58 @@
             const div = document.getElementById('pDivida').value;
 
             if(!nome || !preco) return showToast("Preencha nome e preço", "error");
+            if(qtd <= 0) return showToast("Quantidade deve ser maior que 0", "error");
 
-            db.ref(`contas/${currentUserId}/products`).push({
-                nome, preco, custo: custo || preco * 0.7, qtd, divida: div,
-                lucroUnitario: (preco - (custo || preco * 0.7)),
-                createdAt: { ".sv": "timestamp" }
-            });
-            
-            fecharModal();
-            showToast('Produto adicionado!', 'success');
-            
-            document.getElementById('pNome').value = '';
-            document.getElementById('pPreco').value = '';
-            document.getElementById('pCusto').value = '';
-            document.getElementById('pQtd').value = '';
+            try {
+                showToast('A processar...', 'info');
+                
+                // Verificar se produto já existe (case insensitive)
+                const produtoExistente = localProducts.find(p => 
+                    p.nome.toLowerCase() === nome.toLowerCase()
+                );
+                
+                if (produtoExistente) {
+                    // Produto existe - apenas adicionar quantidade
+                    const novoStock = produtoExistente.qtd + qtd;
+                    
+                    await db.ref(`contas/${currentUserId}/products/${produtoExistente.id}`).update({
+                        qtd: novoStock,
+                        preco: preco,  // Atualizar preço se mudou
+                        custo: custo || produtoExistente.custo,  // Atualizar custo se fornecido
+                        divida: div,
+                        lucroUnitario: (preco - (custo || produtoExistente.custo || preco * 0.7)),
+                        updatedAt: { ".sv": "timestamp" }
+                    });
+                    
+                    fecharModal();
+                    showToast(`Stock actualizado! ${produtoExistente.nome}: ${produtoExistente.qtd} → ${novoStock} unidades`, 'success');
+                } else {
+                    // Produto novo - criar registo
+                    await db.ref(`contas/${currentUserId}/products`).push({
+                        nome, 
+                        preco, 
+                        custo: custo || preco * 0.7, 
+                        qtd, 
+                        divida: div,
+                        lucroUnitario: (preco - (custo || preco * 0.7)),
+                        createdAt: { ".sv": "timestamp" }
+                    });
+                    
+                    fecharModal();
+                    showToast('Novo produto adicionado!', 'success');
+                }
+                
+                // Limpar formulário
+                document.getElementById('pNome').value = '';
+                document.getElementById('pPreco').value = '';
+                document.getElementById('pCusto').value = '';
+                document.getElementById('pQtd').value = '';
+                document.getElementById('pDivida').value = 'Não';
+                
+            } catch (err) {
+                console.error('Erro:', err);
+                showToast('Erro ao guardar: ' + err.message, 'error');
+            }
         }
 
         function renderStock() {
@@ -1049,7 +1087,6 @@
                 showToast('Produto removido', 'success');
             }
         }
-
         // ==========================================
         // VENDAS
         // ==========================================
