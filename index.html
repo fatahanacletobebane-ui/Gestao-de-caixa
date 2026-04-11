@@ -627,16 +627,29 @@
                     <div class="lg:col-span-2 flex flex-col gap-4">
                         <!-- Busca e Categorias -->
                         <div class="card p-4">
-                            <div class="relative mb-4">
-                                <i class="fas fa-barcode absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl"></i>
-                                <input type="text" id="buscaProduto" placeholder="Código de barras ou nome do produto..." 
-                                    class="search-input w-full p-4 pl-12 pr-12 rounded-2xl text-lg font-bold"
-                                    oninput="buscarProdutos()" onkeypress="handleBarcode(event)">
+                            <!-- Campo de Pesquisa por Nome -->
+                            <div class="relative mb-3">
+                                <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                <input type="text" id="buscaProduto" placeholder="Pesquisar produto por nome..." 
+                                    class="w-full p-3 pl-12 pr-12 bg-white border-2 border-gray-200 rounded-xl text-base font-bold focus:border-violet-500 focus:outline-none"
+                                    oninput="buscarProdutos()">
                                 <div class="absolute right-4 top-1/2 -translate-y-1/2">
                                     <span class="shortcut-key">F5</span>
                                 </div>
                             </div>
                             
+                            <!-- Campo de Código de Barras -->
+                            <div class="relative mb-4">
+                                <i class="fas fa-barcode absolute left-4 top-1/2 -translate-y-1/2 text-violet-500"></i>
+                                <input type="text" id="codigoBarras" placeholder="Código de barras (escaneie ou digite)..." 
+                                    class="w-full p-3 pl-12 pr-12 bg-violet-50 border-2 border-violet-300 rounded-xl text-base font-bold text-violet-800 placeholder-violet-400 focus:border-violet-500 focus:outline-none"
+                                    onkeypress="handleBarcode(event)">
+                                <div class="absolute right-4 top-1/2 -translate-y-1/2">
+                                    <span class="shortcut-key bg-violet-200 text-violet-700">ENTER</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Categorias -->
                             <div class="flex gap-2 overflow-x-auto pb-2" id="categoriasList">
                                 <button onclick="filterByCategory('all')" class="category-chip active">Todos</button>
                                 <button onclick="filterByCategory('alimentos')" class="category-chip">Alimentos</button>
@@ -674,7 +687,7 @@
                                 <div class="text-center py-8 text-gray-400">
                                     <i class="fas fa-cart-plus text-4xl mb-2"></i>
                                     <p>Carrinho vazio</p>
-                                    <p class="text-xs mt-1">Use F5 para buscar produtos</p>
+                                    <p class="text-xs mt-1">Pesquise ou use código de barras</p>
                                 </div>
                             </div>
 
@@ -713,12 +726,12 @@
                         <div class="card p-4">
                             <h4 class="font-bold text-gray-700 mb-3 text-sm">Teclas de Atalho</h4>
                             <div class="grid grid-cols-2 gap-2 text-xs">
-                                <div class="flex items-center gap-2"><span class="shortcut-key">F5</span> Buscar</div>
+                                <div class="flex items-center gap-2"><span class="shortcut-key">F5</span> Pesquisar</div>
+                                <div class="flex items-center gap-2"><span class="shortcut-key">ENTER</span> Código Barras</div>
                                 <div class="flex items-center gap-2"><span class="shortcut-key">F6</span> Quantidade</div>
                                 <div class="flex items-center gap-2"><span class="shortcut-key">F7</span> Desconto</div>
                                 <div class="flex items-center gap-2"><span class="shortcut-key">F8</span> Cancelar Item</div>
                                 <div class="flex items-center gap-2"><span class="shortcut-key">F9</span> Pagar</div>
-                                <div class="flex items-center gap-2"><span class="shortcut-key">ESC</span> Fechar</div>
                             </div>
                         </div>
                     </div>
@@ -1556,7 +1569,7 @@
             if (busca) {
                 filtered = filtered.filter(p => 
                     p.nome.toLowerCase().includes(busca) || 
-                    (p.codigo && p.codigo.includes(busca))
+                    (p.codigo && p.codigo.toLowerCase().includes(busca))
                 );
             }
             
@@ -1571,6 +1584,7 @@
                     <h4 class="font-bold text-gray-800 text-sm line-clamp-2 mb-1">${p.nome}</h4>
                     <p class="text-violet-600 font-black text-lg">${p.preco.toFixed(2)} MT</p>
                     <p class="text-xs text-gray-400 mt-1">Stock: ${p.qtd}</p>
+                    ${p.codigo ? `<p class="text-[10px] text-gray-400 font-mono mt-0.5">${p.codigo}</p>` : ''}
                 </div>
             `).join('') || '<div class="col-span-full text-center py-8 text-gray-400">Nenhum produto encontrado</div>';
         }
@@ -1601,14 +1615,20 @@
 
         function handleBarcode(e) {
             if (e.key === 'Enter') {
-                const code = e.target.value.trim();
+                const code = document.getElementById('codigoBarras').value.trim();
+                if (!code) return;
+                
                 const product = localProducts.find(p => p.codigo === code);
                 if (product) {
                     addToCart(product.id);
-                    e.target.value = '';
+                    document.getElementById('codigoBarras').value = '';
                     showToast(`${product.nome} adicionado`, 'success');
                 } else {
-                    showToast('Produto não encontrado', 'error');
+                    showToast('Código não encontrado', 'error');
+                    setTimeout(() => {
+                        document.getElementById('codigoBarras').value = '';
+                        document.getElementById('codigoBarras').focus();
+                    }, 1500);
                 }
             }
         }
@@ -1658,7 +1678,7 @@
                     <div class="text-center py-8 text-gray-400">
                         <i class="fas fa-cart-plus text-4xl mb-2"></i>
                         <p>Carrinho vazio</p>
-                        <p class="text-xs mt-1">Use F5 para buscar produtos</p>
+                        <p class="text-xs mt-1">Pesquise ou use código de barras</p>
                     </div>
                 `;
                 document.getElementById('btnFinalizar').disabled = true;
