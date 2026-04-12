@@ -3,37 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Moz Vendas Pro - Sistema Fiscal</title>
+    <title>Moz Vendas Pro</title>
     <link rel="stylesheet" href="css/styles.css">
-    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 </head>
 <body>
-    <!-- Tela de Login -->
+    <!-- LOGIN SIMPLES - Sem Firebase Auth -->
     <div id="loginScreen" class="screen">
         <div class="login-box">
             <h1>🛒 Moz Vendas Pro</h1>
             <p>Sistema de Faturação Certificado</p>
-            <form id="loginForm">
-                <input type="email" id="loginEmail" placeholder="Email" required>
-                <input type="password" id="loginPassword" placeholder="Senha" required>
-                <button type="submit">Entrar</button>
-            </form>
+            
+            <input type="email" id="loginEmail" placeholder="Email" required>
+            <input type="password" id="loginSenha" placeholder="Senha" required>
+            <button onclick="auth.login()">Entrar</button>
+            
             <div id="loginError" class="error"></div>
         </div>
     </div>
 
-    <!-- Dashboard Principal -->
+    <!-- DASHBOARD -->
     <div id="dashboard" class="screen hidden">
         <header>
             <div class="header-left">
-                <h2 id="nomeEmpresa">Moz Vendas Moz</h2>
-                <span id="nuitDisplay">NUIT: 123999876</span>
+                <h2 id="nomeEmpresa">Empresa</h2>
+                <span id="nuitDisplay">NUIT: </span>
             </div>
             <div class="header-right">
-                <select id="lojaSelector">
+                <select id="lojaSelector" onchange="lojas.mudarLoja(this.value)">
                     <option value="">Selecionar Loja...</option>
                     <option value="mercearia">🥖 Mercearia</option>
                     <option value="ferragem">🔧 Ferragem</option>
@@ -43,171 +41,147 @@
                     <option value="pastelaria">🧁 Pastelaria</option>
                     <option value="outros">📦 Outros</option>
                 </select>
-                <button onclick="app.logout()">Sair</button>
+                <button onclick="auth.logout()">Sair</button>
             </div>
         </header>
 
         <nav class="tabs">
-            <button class="tab-btn active" onclick="app.showTab('vendas')">🧾 Nova Venda</button>
-            <button class="tab-btn" onclick="app.showTab('produtos')">📦 Produtos</button>
-            <button class="tab-btn" onclick="app.showTab('historico')">📜 Histórico</button>
-            <button class="tab-btn" onclick="app.showTab('relatorios')">📊 Relatórios Fiscais</button>
+            <button class="tab-btn active" onclick="app.tab('vendas')">🧾 Venda</button>
+            <button class="tab-btn" onclick="app.tab('produtos')">📦 Produtos</button>
+            <button class="tab-btn" onclick="app.tab('historico')">📜 Histórico</button>
+            <button class="tab-btn" onclick="app.tab('relatorios')">📊 Relatórios</button>
         </nav>
 
-        <!-- Aba: Vendas -->
+        <!-- VENDAS -->
         <div id="tab-vendas" class="tab-content active">
-            <div class="venda-container">
-                <div class="produtos-section">
-                    <h3>Produtos - <span id="lojaAtualNome">Selecione uma loja</span></h3>
+            <div class="venda-layout">
+                <div class="produtos-area">
+                    <h3 id="tituloProdutos">Selecione uma loja</h3>
                     <div id="listaProdutos" class="grid-produtos">
-                        <p class="empty-state">Selecione uma loja para ver os produtos</p>
+                        <p class="empty">Nenhuma loja selecionada</p>
                     </div>
                 </div>
                 
-                <div class="carrinho-section">
+                <div class="carrinho-area">
                     <h3>🛒 Carrinho</h3>
-                    <div id="carrinhoItems" class="carrinho-lista">
-                        <p class="empty">Nenhum item adicionado</p>
+                    <div id="carrinhoItens" class="carrinho-lista">
+                        <p class="empty">Vazio</p>
                     </div>
                     
-                    <div class="totals">
-                        <div class="line">
+                    <div class="totais">
+                        <div class="linha">
                             <span>Subtotal:</span>
                             <span id="subtotal">0,00 MT</span>
                         </div>
-                        <div class="line">
+                        <div class="linha">
                             <span>IVA (17%):</span>
                             <span id="iva">0,00 MT</span>
                         </div>
-                        <div class="line total">
+                        <div class="linha total">
                             <span>TOTAL:</span>
                             <span id="total">0,00 MT</span>
                         </div>
                     </div>
 
-                    <div class="tipo-documento">
-                        <label>Tipo de Documento:</label>
-                        <select id="tipoDocumento">
-                            <option value="recibo">Recibo</option>
-                            <option value="fatura">Fatura</option>
-                            <option value="fatura_recibo">Fatura-Recibo</option>
-                        </select>
-                    </div>
-
-                    <div class="cliente-info">
-                        <input type="text" id="nomeCliente" placeholder="Nome do Cliente">
-                        <input type="text" id="nuitCliente" placeholder="NUIT do Cliente (opcional)">
-                    </div>
-
-                    <button id="btnFinalizar" class="btn-primary" onclick="vendas.finalizarVenda()" disabled>
-                        Emitir Documento
+                    <select id="tipoDoc">
+                        <option value="recibo">Recibo</option>
+                        <option value="fatura">Fatura</option>
+                        <option value="fatura_recibo">Fatura-Recibo</option>
+                    </select>
+                    
+                    <input type="text" id="nomeCliente" placeholder="Nome do Cliente">
+                    <input type="text" id="nuitCliente" placeholder="NUIT Cliente (opcional)">
+                    
+                    <button id="btnFinalizar" onclick="vendas.finalizar()" disabled>
+                        EMITIR DOCUMENTO
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- Aba: Produtos -->
+        <!-- PRODUTOS -->
         <div id="tab-produtos" class="tab-content">
-            <div class="produtos-header">
-                <h3>Gestão de Produtos - <span id="lojaProdutosNome">Selecione uma loja</span></h3>
-                <button class="btn-secondary" onclick="produtos.showModal()">+ Novo Produto</button>
-            </div>
-            <div id="tabelaProdutos" class="table-container">
-                <p class="empty-state">Selecione uma loja para gerenciar produtos</p>
+            <h3 id="tituloGestaoProdutos">Gestão de Produtos</h3>
+            <button onclick="produtos.novo()" class="btn-novo">+ Novo Produto</button>
+            <div id="tabelaProdutos" class="tabela">
+                <p>Selecione uma loja primeiro</p>
             </div>
         </div>
 
-        <!-- Aba: Histórico -->
+        <!-- HISTÓRICO -->
         <div id="tab-historico" class="tab-content">
             <h3>📜 Histórico de Documentos</h3>
-            <div class="filters">
-                <input type="date" id="filtroDataInicio">
-                <input type="date" id="filtroDataFim">
-                <select id="filtroTipo">
-                    <option value="">Todos os tipos</option>
-                    <option value="recibo">Recibo</option>
-                    <option value="fatura">Fatura</option>
-                    <option value="fatura_recibo">Fatura-Recibo</option>
-                    <option value="anulado">Anulados</option>
-                </select>
+            <div class="filtros">
+                <input type="date" id="filtroData1">
+                <input type="date" id="filtroData2">
                 <button onclick="historico.filtrar()">Filtrar</button>
             </div>
-            <div id="listaHistorico" class="table-container">
-                <p class="empty-state">Nenhum documento emitido</p>
+            <div id="listaHistorico" class="tabela">
+                <p>Nenhum documento</p>
             </div>
         </div>
 
-        <!-- Aba: Relatórios Fiscais -->
+        <!-- RELATÓRIOS -->
         <div id="tab-relatorios" class="tab-content">
-            <h3>📊 Relatórios para Autoridade Tributária</h3>
-            <div class="relatorio-controls">
-                <div class="periodo">
-                    <label>Período:</label>
-                    <select id="relatorioPeriodo" onchange="relatorios.changePeriodo()">
-                        <option value="diario">Diário</option>
-                        <option value="semanal">Semanal</option>
-                        <option value="mensal">Mensal</option>
-                        <option value="trimestral">Trimestral</option>
-                        <option value="anual">Anual</option>
-                        <option value="custom">Personalizado</option>
-                    </select>
-                    <input type="date" id="relatorioDataInicio" class="hidden">
-                    <input type="date" id="relatorioDataFim" class="hidden">
-                </div>
-                
-                <div class="lojas-check">
-                    <label>Lojas:</label>
-                    <div id="lojasCheckboxes">
-                        <label><input type="checkbox" value="mercearia" checked> Mercearia</label>
-                        <label><input type="checkbox" value="ferragem" checked> Ferragem</label>
-                        <label><input type="checkbox" value="takeaway" checked> Take Away</label>
-                        <label><input type="checkbox" value="restaurante" checked> Restaurante</label>
-                        <label><input type="checkbox" value="farmacia" checked> Farmácia</label>
-                        <label><input type="checkbox" value="pastelaria" checked> Pastelaria</label>
-                        <label><input type="checkbox" value="outros" checked> Outros</label>
-                    </div>
-                </div>
-
-                <button class="btn-primary" onclick="relatorios.gerarRelatorio()">
+            <h3>📊 Relatório Fiscal A4</h3>
+            <div class="relatorio-form">
+                <label>Período:</label>
+                <input type="date" id="relData1">
+                <input type="date" id="relData2">
+                <button onclick="relatorios.gerar()" class="btn-primary">
                     Gerar Relatório A4
                 </button>
             </div>
-
-            <!-- Preview do Relatório -->
-            <div id="relatorioPreview" class="relatorio-a4 hidden">
-                <!-- Conteúdo gerado dinamicamente -->
-            </div>
+            <div id="previewRelatorio"></div>
         </div>
     </div>
 
-    <!-- Modal: Recibo Impresso -->
+    <!-- MODAL RECIBO -->
     <div id="modalRecibo" class="modal hidden">
-        <div class="modal-content recibo-print">
-            <div id="reciboConteudo" class="recibo-fiscal">
-                <!-- Recibo gerado dinamicamente -->
-            </div>
-            <div class="modal-actions no-print">
-                <button onclick="vendas.imprimirRecibo()" class="btn-primary">🖨️ Imprimir</button>
-                <button onclick="vendas.downloadPDF()" class="btn-secondary">📄 PDF</button>
-                <button onclick="vendas.fecharModal()" class="btn-danger">Fechar</button>
+        <div class="modal-conteudo">
+            <div id="conteudoRecibo"></div>
+            <div class="acoes">
+                <button onclick="window.print()">🖨️ Imprimir</button>
+                <button onclick="document.getElementById('modalRecibo').classList.add('hidden')">
+                    Fechar
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- Modal: Anulação -->
-    <div id="modalAnulacao" class="modal hidden">
-        <div class="modal-content">
+    <!-- MODAL ANULAÇÃO -->
+    <div id="modalAnular" class="modal hidden">
+        <div class="modal-conteudo">
             <h3>⚠️ Anular Documento</h3>
-            <p id="anulacaoInfo"></p>
-            <textarea id="motivoAnulacao" placeholder="Motivo da anulação (obrigatório)" rows="3"></textarea>
-            <div class="modal-actions">
-                <button onclick="anulacoes.confirmarAnulacao()" class="btn-danger">Confirmar Anulação</button>
-                <button onclick="anulacoes.fecharModal()" class="btn-secondary">Cancelar</button>
+            <p id="infoAnular"></p>
+            <textarea id="motivoAnular" placeholder="Motivo obrigatório"></textarea>
+            <div class="acoes">
+                <button onclick="anulacoes.confirmar()" class="btn-danger">Confirmar Anulação</button>
+                <button onclick="document.getElementById('modalAnular').classList.add('hidden')">
+                    Cancelar
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- Scripts -->
+    <!-- MODAL PRODUTO -->
+    <div id="modalProduto" class="modal hidden">
+        <div class="modal-conteudo">
+            <h3 id="tituloModalProduto">Novo Produto</h3>
+            <input type="hidden" id="produtoId">
+            <input type="text" id="produtoNome" placeholder="Nome do produto">
+            <input type="number" id="produtoPreco" placeholder="Preço" step="0.01">
+            <input type="number" id="produtoStock" placeholder="Quantidade em stock">
+            <div class="acoes">
+                <button onclick="produtos.salvar()">Salvar</button>
+                <button onclick="document.getElementById('modalProduto').classList.add('hidden')">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
     <script src="js/firebase-config.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/lojas.js"></script>
